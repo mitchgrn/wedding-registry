@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Concept 1 — Editorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink:   #00171f;
+    --navy:  #003459;
+    --ceru:  #007ea7;
+    --sky:   #00a8e8;
+    --white: #ffffff;
+    --bg:    #f6f9fc;
+    --muted: #4e6a82;
+    --border: rgba(0,23,31,0.1);
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  h1,h2,h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 300; }
+
+  /* ─── CONCEPT 1: Editorial split — navy left panel, white right ─── */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 260px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left {
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 56px;
+  }
+  .eyebrow {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--sky);
+    font-family: 'Inter', sans-serif;
+  }
+  .header-left h1 {
+    margin-top: 10px;
+    font-size: clamp(2.6rem, 4vw, 3.8rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--white);
+  }
+  .header-left .rule {
+    width: 32px; height: 1px;
+    background: rgba(0,168,232,0.4);
+    margin: 20px 0 16px;
+  }
+  .header-left .event-label {
+    font-size: 0.62rem; font-weight: 600;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--sky); font-family: 'Inter', sans-serif;
+  }
+  .header-left .event-date {
+    font-size: 1.15rem; font-weight: 300;
+    color: rgba(255,255,255,0.85);
+    margin-top: 4px;
+  }
+  .header-left .event-loc {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.45);
+    margin-top: 2px;
+  }
+  .header-left .desc {
+    margin-top: 20px;
+    font-size: 0.9rem; line-height: 1.75;
+    color: rgba(255,255,255,0.45);
+    max-width: 320px;
+  }
+  .header-right {
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    border-left: 1px solid var(--border);
+  }
+  .photo-frame {
+    position: relative;
+    width: 140px; height: 185px;
+  }
+  .photo-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    bottom: -10px; right: -10px;
+    border: 1px solid rgba(0,126,167,0.3);
+    z-index: 0;
+    pointer-events: none;
+  }
+  .photo-frame img {
+    position: relative; z-index: 1;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center 18%;
+    display: block;
+    box-shadow: 0 8px 32px rgba(0,23,31,0.18);
+  }
+  /* stats */
+  .stats {
+    border-bottom: 1px solid var(--border);
+    background: var(--white);
+    padding: 10px 56px;
+    display: flex; gap: 20px; align-items: center;
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stats-div { width: 1px; height: 12px; background: var(--border); }
+  /* label */
+  .concept-label {
+    background: var(--navy); color: var(--sky);
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 6px 14px; display: inline-block;
+    font-family: 'Inter', sans-serif;
+  }
+  /* mock card */
+  .cards { padding: 32px 56px; display: flex; gap: 20px; }
+  .card {
+    background: var(--white);
+    border: 1px solid rgba(0,23,31,0.08);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,23,31,0.04), 0 8px 20px rgba(0,52,89,0.07), 0 20px 40px rgba(0,52,89,0.04);
+    overflow: hidden;
+    width: 280px;
+  }
+  .card-img {
+    height: 180px; background: #ddeef6;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em;
+    position: relative;
+  }
+  .card-img .price-tag {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--ink); color: white;
+    font-size: 0.78rem; font-weight: 600;
+    padding: 4px 10px; border-radius: 3px;
+    font-family: 'Inter', sans-serif;
+  }
+  .card-img .status-tag {
+    position: absolute; top: 10px; left: 10px;
+    background: rgba(0,126,167,0.12);
+    border: 1px solid rgba(0,126,167,0.25);
+    color: var(--ceru);
+    font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 3px;
+    font-family: 'Inter', sans-serif;
+  }
+  .card-body { padding: 16px 18px 20px; }
+  .card-store { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--navy); font-family: 'Inter', sans-serif; }
+  .card-title { font-size: 1.2rem; line-height: 1.2; margin-top: 4px; }
+  .card-notes { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-top: 6px; }
+  .progress-box { margin-top: 14px; background: #eaf5fb; border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-family: 'Inter', sans-serif; }
+  .progress-track { height: 4px; background: rgba(0,23,31,0.1); border-radius: 999px; margin-top: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--navy); border-radius: 999px; width: 40%; }
+  .card-btn { display: block; margin-top: 14px; width: 100%; padding: 9px 0; text-align: center; background: var(--navy); color: var(--white); font-size: 0.85rem; font-weight: 500; border: none; border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif; letter-spacing: 0.01em; }
+</style>
+</head>
+<body>
+  <div class="concept-label">Concept 1 — Editorial Split</div>
+
+  <header class="header">
+    <div class="header-left">
+      <p class="eyebrow">Wedding Registry</p>
+      <h1>Taylor<br />&amp; Mitch</h1>
+      <div class="rule"></div>
+      <p class="event-label">Wedding Shower</p>
+      <p class="event-date">May 3, 2026</p>
+      <p class="event-loc">1–3 pm · Red River Community Centre</p>
+      <p class="desc">Browse the list, buy from the store, then mark what you're covering so everyone stays in the loop.</p>
+    </div>
+    <div class="header-right">
+      <div class="photo-frame">
+        <img src="../app/images/us.jpg" alt="Taylor and Mitch" />
+      </div>
+    </div>
+  </header>
+
+  <div class="stats">
+    <span>24 items</span>
+    <span class="stats-div"></span>
+    <span>18 available</span>
+    <span class="stats-div"></span>
+    <span>12 requested</span>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-img">
+        <span class="status-tag">3 still needed</span>
+        <span class="price-tag">$89</span>
+        Product Image
+      </div>
+      <div class="card-body">
+        <p class="card-store">Williams-Sonoma</p>
+        <h3 class="card-title">Le Creuset Dutch Oven</h3>
+        <p class="card-notes">5.5 qt, Marseille blue — perfect for soups and braises.</p>
+        <div class="progress-box">
+          <div class="progress-label"><span>Requested</span><span>2 of 5</span></div>
+          <div class="progress-track"><div class="progress-fill"></div></div>
+        </div>
+        <button class="card-btn">Purchase from store ↗</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

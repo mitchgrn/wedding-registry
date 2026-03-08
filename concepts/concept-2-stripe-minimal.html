@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Concept 2 — Stripe Minimal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink:   #00171f;
+    --navy:  #003459;
+    --ceru:  #007ea7;
+    --sky:   #00a8e8;
+    --white: #ffffff;
+    --bg:    #f6f9fc;
+    --muted: #4e6a82;
+    --border: rgba(0,23,31,0.1);
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  h1,h2,h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 300; }
+
+  /* ─── CONCEPT 2: Stripe-style — white page, compact header, top accent ─── */
+  .accent-bar { height: 3px; background: var(--navy); }
+
+  .header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+  }
+  .header-text {}
+  .header-meta {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.65rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--ceru); font-family: 'Inter', sans-serif;
+  }
+  .header-meta::before {
+    content: ''; display: block;
+    width: 20px; height: 1px; background: var(--ceru);
+  }
+  .header-text h1 {
+    font-size: 2.8rem; line-height: 0.95;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin-top: 8px;
+  }
+  .header-details {
+    display: flex; flex-wrap: wrap; gap: 6px 16px;
+    margin-top: 10px;
+    font-size: 0.95rem; color: var(--muted);
+  }
+  .header-details strong { color: var(--ink); font-weight: 500; }
+  .header-desc {
+    margin-top: 10px;
+    font-size: 0.95rem; line-height: 1.7;
+    color: var(--muted); max-width: 400px;
+  }
+  .header-photo {
+    flex-shrink: 0;
+    width: 88px; height: 116px;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,23,31,0.12), 0 12px 32px rgba(0,52,89,0.12);
+  }
+  .header-photo img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 18%;
+    display: block;
+  }
+
+  .stats {
+    border-bottom: 1px solid var(--border);
+    background: #eaf5fb;
+    padding: 9px 56px;
+    display: flex; gap: 16px; align-items: center;
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stats-div { width: 1px; height: 12px; background: var(--border); }
+
+  .label { background: var(--navy); color: var(--sky); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; padding: 6px 14px; display: inline-block; font-family: 'Inter', sans-serif; }
+
+  .cards { padding: 28px 56px; display: flex; gap: 20px; }
+  .card {
+    background: var(--white);
+    border: 1px solid rgba(0,23,31,0.08);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,23,31,0.04), 0 8px 20px rgba(0,52,89,0.07), 0 20px 40px rgba(0,52,89,0.04);
+    overflow: hidden; width: 300px;
+    display: flex;
+  }
+  /* List layout for this concept */
+  .card-img {
+    width: 110px; flex-shrink: 0;
+    background: #ddeef6;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em;
+  }
+  .card-body { padding: 16px; flex: 1; }
+  .card-store { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--navy); font-family: 'Inter', sans-serif; }
+  .card-title { font-size: 1.15rem; line-height: 1.2; margin-top: 4px; }
+  .card-notes { font-size: 0.82rem; color: var(--muted); line-height: 1.55; margin-top: 5px; }
+  .card-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; gap: 8px; }
+  .price { font-size: 1rem; font-weight: 600; color: var(--ink); }
+  .card-btn { padding: 7px 14px; background: var(--navy); color: var(--white); font-size: 0.78rem; font-weight: 500; border: none; border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; }
+  .progress-track { height: 3px; background: rgba(0,23,31,0.1); border-radius: 999px; margin-top: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--ceru); border-radius: 999px; width: 40%; }
+</style>
+</head>
+<body>
+  <div class="label">Concept 2 — Stripe Minimal</div>
+  <div class="accent-bar"></div>
+
+  <header class="header">
+    <div class="header-text">
+      <div class="header-meta">Wedding Registry</div>
+      <h1>Taylor &amp; Mitch</h1>
+      <div class="header-details">
+        <span><strong>Wedding Shower</strong> · May 3, 2026</span>
+        <span>1–3 pm · Red River Community Centre</span>
+      </div>
+      <p class="header-desc">Browse the list, buy from the store, then mark what you're covering so everyone stays in the loop.</p>
+    </div>
+    <div class="header-photo">
+      <img src="../app/images/us.jpg" alt="Taylor and Mitch" />
+    </div>
+  </header>
+
+  <div class="stats">
+    <span>24 items</span>
+    <span class="stats-div"></span>
+    <span>18 available</span>
+    <span class="stats-div"></span>
+    <span>12 requested</span>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-img">Image</div>
+      <div class="card-body">
+        <p class="card-store">Williams-Sonoma</p>
+        <h3 class="card-title">Le Creuset Dutch Oven</h3>
+        <p class="card-notes">5.5 qt, Marseille blue</p>
+        <div class="progress-track"><div class="progress-fill"></div></div>
+        <div class="card-row">
+          <span class="price">$89</span>
+          <button class="card-btn">Purchase ↗</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
