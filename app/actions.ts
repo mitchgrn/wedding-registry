@@ -10,6 +10,7 @@ import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supab
 export type ActionState = {
   status: "idle" | "success" | "error";
   message?: string;
+  fieldErrors?: Partial<Record<"title" | "purchaseUrl" | "desiredQuantity" | "imageUrl" | "notes" | "sortOrder" | "manualPrice", string>>;
 };
 
 export type AutofillState = {
@@ -65,7 +66,20 @@ async function upsertRegistryItem(formData: FormData, currentId?: string): Promi
   });
 
   if (!parsed.success) {
-    return { status: "error", message: parsed.error.issues[0]?.message ?? "Invalid item." };
+    const fieldErrors: NonNullable<ActionState["fieldErrors"]> = {};
+
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0];
+      if (typeof key === "string" && !(key in fieldErrors)) {
+        fieldErrors[key as keyof typeof fieldErrors] = issue.message;
+      }
+    }
+
+    return {
+      status: "error",
+      message: parsed.error.issues[0]?.message ?? "Invalid item.",
+      fieldErrors,
+    };
   }
 
   const supabase = createServiceRoleClient();
@@ -196,6 +210,26 @@ export async function toggleItemActiveAction(itemId: string, nextState: boolean)
   revalidatePath("/");
   revalidatePath("/admin");
   return { status: "success", message: nextState ? "Item restored." : "Item archived." };
+}
+
+export async function deleteRegistryItemAction(itemId: string): Promise<ActionState> {
+  await requireAdmin();
+
+  const parsed = refreshPriceSchema.safeParse({ itemId });
+  if (!parsed.success) {
+    return { status: "error", message: "Invalid item." };
+  }
+
+  const supabase = createServiceRoleClient();
+  const { error } = await supabase.from("registry_items").delete().eq("id", itemId);
+
+  if (error) {
+    return { status: "error", message: error.message };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return { status: "success", message: "Item deleted." };
 }
 
 export async function signOutAction() {

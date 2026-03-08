@@ -20,17 +20,17 @@ export function ReservationForm({
   const [state, formAction, pending] = useActionState(createReservationAction, initialState);
 
   return (
-    <form action={formAction} className="space-y-3 rounded-xl border border-border bg-muted/40 p-4">
+    <form action={formAction} className="space-y-2.5 rounded-xl border border-border bg-muted/40 p-3">
       <input type="hidden" name="itemId" value={itemId} />
 
       <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-primary">
         Purchase this gift
       </p>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5">
         <div className="col-span-2 space-y-1.5">
           <Label htmlFor={`guest-${itemId}`}>Your name</Label>
-          <Input id={`guest-${itemId}`} name="guestName" placeholder="Full name" required />
+          <Input id={`guest-${itemId}`} name="guestName" placeholder="Full name" required className="h-9" />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor={`qty-${itemId}`}>Quantity purchased</Label>
@@ -42,10 +42,11 @@ export function ReservationForm({
             max={remainingQuantity}
             defaultValue={1}
             required
+            className="h-9"
           />
         </div>
         <div className="flex items-end">
-          <Button type="submit" className="w-full" disabled={pending || remainingQuantity < 1}>
+          <Button type="submit" className="h-9 w-full" disabled={pending || remainingQuantity < 1}>
             {pending ? <LoaderCircle className="size-4 animate-spin" /> : null}
             Purchase
           </Button>
