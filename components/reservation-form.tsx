@@ -33,7 +33,7 @@ export function ReservationForm({
           <Input id={`guest-${itemId}`} name="guestName" placeholder="Full name" required />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`qty-${itemId}`}>Quantity requested</Label>
+          <Label htmlFor={`qty-${itemId}`}>Quantity purchased</Label>
           <Input
             id={`qty-${itemId}`}
             name="quantity"
@@ -47,7 +47,7 @@ export function ReservationForm({
         <div className="flex items-end">
           <Button type="submit" className="w-full" disabled={pending || remainingQuantity < 1}>
             {pending ? <LoaderCircle className="size-4 animate-spin" /> : null}
-            Request quantity
+            Purchase
           </Button>
         </div>
       </div>

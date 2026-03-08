@@ -1,7 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutGrid, LogOut, Package } from "lucide-react";
+import { ExternalLink, LayoutGrid, LogOut, Package } from "lucide-react";
 import { AdminItemForm } from "@/components/admin-item-form";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser, requireAdmin } from "@/lib/auth";
 import { getAdminRegistryItems } from "@/lib/data";
@@ -22,57 +22,73 @@ export default async function AdminPage() {
   const fullyReservedCount = items.filter((i) => i.remaining_quantity === 0).length;
 
   return (
-    <main className="min-h-screen bg-muted/30">
-      {/* Top nav */}
-      <header className="sticky top-0 z-10 border-b border-border bg-white/90 backdrop-blur-md">
+    <main className="min-h-screen bg-[linear-gradient(180deg,rgba(234,245,251,0.35),rgba(255,255,255,1)_20%)]">
+      <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-10">
           <div className="flex items-center gap-3">
-            <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-[var(--cerulean)]">
               Registry Admin
             </span>
-            <span className="h-3.5 w-px bg-border" />
-            <span className="text-[0.7rem] text-muted-foreground">{user?.email}</span>
+            <span className="h-3.5 w-px bg-[var(--border)]" />
+            <span className="text-[0.7rem] text-[var(--ink-black)]/55">{user?.email}</span>
           </div>
-          <form action={signOutAction}>
-            <Button type="submit" variant="ghost" size="sm">
-              <LogOut className="size-4" />
-              Sign out
+          <div className="flex items-center gap-3">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="rounded-full border border-[var(--border)] bg-white px-3.5 text-[var(--ink-black)]/70 hover:border-[var(--cerulean)]/30 hover:bg-[var(--soft-blue)]"
+            >
+              <Link href="/">
+                <ExternalLink className="size-4" />
+                View homepage
+              </Link>
             </Button>
-          </form>
+            <form action={signOutAction}>
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                className="rounded-full border border-[var(--border)] bg-white px-3.5 text-[var(--ink-black)]/70 hover:border-[var(--cerulean)]/30 hover:bg-[var(--soft-blue)]"
+              >
+                <LogOut className="size-4" />
+                Sign out
+              </Button>
+            </form>
+          </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-7xl px-6 py-10 md:px-10 md:py-12">
-        {/* Page header */}
         <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl">Manage registry</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Add, edit, and archive gift items.</p>
+          <h1 className="text-4xl italic text-[var(--ink-black)] md:text-5xl">Manage registry</h1>
+          <p className="mt-2 text-sm text-[var(--ink-black)]/58">Add, edit, and archive gift items.</p>
         </div>
 
-        {/* Stats */}
         <div className="mb-10 grid grid-cols-3 gap-4">
           {[
             { label: "Public items", value: activeCount },
             { label: "Reservations", value: totalReservations },
             { label: "Fully reserved", value: fullyReservedCount },
           ].map((stat) => (
-            <div key={stat.label} className="card-elevated rounded-xl p-4">
-              <p className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            <div
+              key={stat.label}
+              className="rounded-xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.55))] p-4 shadow-[0_16px_40px_rgba(0,23,31,0.05)]"
+            >
+              <p className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-[var(--cerulean)]">
                 {stat.label}
               </p>
-              <p className="mt-1.5 text-3xl font-light text-foreground">{stat.value}</p>
+              <p className="mt-1.5 text-3xl font-light text-[var(--ink-black)]">{stat.value}</p>
             </div>
           ))}
         </div>
 
-        {/* Two-col layout */}
         <div className="grid gap-8 xl:grid-cols-[380px_1fr]">
-          {/* Sidebar — add form */}
           <aside className="space-y-6">
             <div>
               <div className="mb-3 flex items-center gap-2">
-                <Package className="size-4 text-muted-foreground" />
-                <h2 className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                <Package className="size-4 text-[var(--deep-space-blue)]" />
+                <h2 className="text-lg text-[var(--deep-space-blue)] md:text-[1.15rem]">
                   Add item
                 </h2>
               </div>
@@ -80,13 +96,12 @@ export default async function AdminPage() {
             </div>
           </aside>
 
-          {/* Main — item list */}
           <div>
             <div className="mb-3 flex items-center gap-2">
-              <LayoutGrid className="size-4 text-muted-foreground" />
-              <h2 className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              <LayoutGrid className="size-4 text-[var(--deep-space-blue)]" />
+              <h2 className="text-lg text-[var(--deep-space-blue)] md:text-[1.15rem]">
                 All items
-                <span className="ml-2 font-normal text-muted-foreground/60">({items.length})</span>
+                <span className="ml-2 font-normal text-[var(--ink-black)]/45">({items.length})</span>
               </h2>
             </div>
             <div className="space-y-4">
@@ -94,7 +109,7 @@ export default async function AdminPage() {
                 <AdminItemForm key={item.id} item={item} />
               ))}
               {!items.length && (
-                <div className="card-elevated rounded-xl border-dashed p-10 text-center text-sm text-muted-foreground">
+                <div className="rounded-xl border border-dashed border-[var(--cerulean)]/25 bg-[var(--soft-blue)]/35 p-10 text-center text-sm text-[var(--ink-black)]/55">
                   No items yet. Use the form to create the first registry entry.
                 </div>
               )}
