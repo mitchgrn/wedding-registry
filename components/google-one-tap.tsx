@@ -17,11 +17,6 @@ export function GoogleOneTap() {
     const supabase = createClient();
     const siteUrl = getClientEnv().NEXT_PUBLIC_SITE_URL ?? window.location.origin;
     const redirectTo = `${siteUrl}/auth/callback?next=/admin`;
-    console.log("Supabase Google OAuth redirectTo", {
-      origin: window.location.origin,
-      siteUrl,
-      redirectTo,
-    });
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

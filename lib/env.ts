@@ -8,7 +8,6 @@ const clientEnvSchema = z.object({
 
 const serverEnvSchema = clientEnvSchema.extend({
   SUPABASE_SECRET_KEY: z.string().min(1),
-  ADMIN_EMAIL: z.string().email(),
 });
 
 export const clientEnv = clientEnvSchema.safeParse({
@@ -22,7 +21,6 @@ export const serverEnv = serverEnvSchema.safeParse({
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
-  ADMIN_EMAIL: process.env.ADMIN_EMAIL,
 });
 
 export function hasClientEnv() {

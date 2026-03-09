@@ -1,11 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { getServerEnv } from "@/lib/env";
+import { getUserRole, syncUserProfile } from "@/lib/auth";
+
+function getSafeNextPath(next: string | null) {
+  if (!next) {
+    return "/admin";
+  }
+
+  if (!next.startsWith("/") || next.startsWith("//")) {
+    return "/admin";
+  }
+
+  return next;
+}
+
+function redirectWithCookies(
+  response: NextResponse,
+  location: URL,
+) {
+  const redirectResponse = NextResponse.redirect(location);
+
+  response.cookies.getAll().forEach((cookie) => {
+    redirectResponse.cookies.set(cookie);
+  });
+
+  return redirectResponse;
+}
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const next = requestUrl.searchParams.get("next") ?? "/admin";
+  const next = getSafeNextPath(requestUrl.searchParams.get("next"));
   const loginUrl = new URL("/admin/login", requestUrl.origin);
   const response = NextResponse.redirect(new URL(next, requestUrl.origin));
   type CookieToSet = {
@@ -40,14 +66,17 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       loginUrl.searchParams.set("error", "session");
-      return NextResponse.redirect(loginUrl);
+      return redirectWithCookies(response, loginUrl);
     }
 
-    if (user.email?.toLowerCase() !== env.ADMIN_EMAIL.toLowerCase()) {
+    await syncUserProfile(user);
+    const role = await getUserRole(user.id);
+
+    if (role !== "admin") {
       await supabase.auth.signOut();
       loginUrl.searchParams.set("error", "unauthorized");
       loginUrl.searchParams.set("email", user.email ?? "");
-      return NextResponse.redirect(loginUrl);
+      return redirectWithCookies(response, loginUrl);
     }
   }
 

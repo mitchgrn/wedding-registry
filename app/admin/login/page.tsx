@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { GoogleOneTap } from "@/components/google-one-tap";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, isCurrentUserAdmin } from "@/lib/auth";
 import { hasClientEnv, serverEnv } from "@/lib/env";
 import { signOutAction } from "@/app/actions";
 
@@ -16,7 +16,7 @@ export default async function AdminLoginPage({
   const error = typeof params?.error === "string" ? params.error : undefined;
   const attemptedEmail = typeof params?.email === "string" ? params.email : undefined;
 
-  if (user && serverEnv.success && user.email?.toLowerCase() === serverEnv.data.ADMIN_EMAIL.toLowerCase()) {
+  if (user && serverEnv.success && (await isCurrentUserAdmin())) {
     redirect("/admin");
   }
 
@@ -30,7 +30,7 @@ export default async function AdminLoginPage({
         <CardContent className="space-y-6 pt-6">
           {error === "unauthorized" ? (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {attemptedEmail ? `${attemptedEmail} is signed in, but it is not the configured admin account.` : "That Google account is not authorized for admin access."}
+              {attemptedEmail ? `${attemptedEmail} is signed in, but does not have the admin role.` : "That Google account is not authorized for admin access."}
             </div>
           ) : null}
           {error === "session" ? (

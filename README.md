@@ -17,7 +17,6 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_SITE_URL=
 SUPABASE_SECRET_KEY=
-ADMIN_EMAIL=you@example.com
 ```
 
 ## Supabase setup
@@ -25,7 +24,15 @@ ADMIN_EMAIL=you@example.com
 1. Create a Supabase project.
 2. Enable Google auth in Supabase Auth.
 3. Set `NEXT_PUBLIC_SITE_URL` to your canonical app URL and set the Supabase Auth `Site URL` and redirect URLs for local and production.
-4. Run the SQL in [supabase/migrations/0001_registry.sql](/Users/mgreen/Workplace/wedding-registry/supabase/migrations/0001_registry.sql).
+4. Run the SQL in [supabase/migrations/0001_registry.sql](/Users/mgreen/Workplace/wedding-registry/supabase/migrations/0001_registry.sql) and [supabase/migrations/0002_user_roles.sql](/Users/mgreen/Workplace/wedding-registry/supabase/migrations/0002_user_roles.sql).
+5. Sign in once with the Google account you want to administer the registry so a `public.users` row is created.
+6. Promote that account in Supabase:
+
+```sql
+update public.users
+set role = 'admin'
+where email = 'you@example.com';
+```
 
 ## Local development
 
@@ -40,4 +47,4 @@ Open `http://localhost:3000`.
 
 - Price extraction is best-effort and will fail on some retailer pages.
 - Public guests do not sign in.
-- Admin access is restricted to the configured `ADMIN_EMAIL`.
+- Admin access is restricted to users with `public.users.role = 'admin'`.

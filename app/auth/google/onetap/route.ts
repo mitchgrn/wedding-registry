@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerEnv } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getUserRole, syncUserProfile } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
@@ -9,7 +9,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing Google credential." }, { status: 400 });
     }
 
-    const env = getServerEnv();
     const supabase = await createServerSupabaseClient();
     const { data, error } = await supabase.auth.signInWithIdToken({
       provider: "google",
@@ -21,7 +20,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error?.message ?? "Unable to sign in." }, { status: 401 });
     }
 
-    if (data.user.email?.toLowerCase() !== env.ADMIN_EMAIL.toLowerCase()) {
+    await syncUserProfile(data.user);
+    const role = await getUserRole(data.user.id);
+
+    if (role !== "admin") {
       await supabase.auth.signOut();
       return NextResponse.json({ error: "That Google account is not authorized." }, { status: 403 });
     }
