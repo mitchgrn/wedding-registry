@@ -26,7 +26,7 @@ export default async function AdminPage() {
       <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-10">
           <div className="flex items-center gap-3">
-            <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-[var(--cerulean)]">
+            <span className="text-sm font-semibold tracking-[0.03em] text-[var(--cerulean)]">
               Registry Admin
             </span>
             <span className="h-3.5 w-px bg-[var(--border)]" />
@@ -75,7 +75,7 @@ export default async function AdminPage() {
               key={stat.label}
               className="rounded-xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.55))] p-4 shadow-[0_16px_40px_rgba(0,23,31,0.05)]"
             >
-              <p className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-[var(--cerulean)]">
+              <p className="text-sm font-medium tracking-[0.03em] text-[var(--cerulean)]">
                 {stat.label}
               </p>
               <p className="mt-1.5 text-3xl font-light text-[var(--ink-black)]">{stat.value}</p>

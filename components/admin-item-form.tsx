@@ -3,10 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState, useTransition, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import Image from "next/image";
-import { ChevronDown, Gift, LoaderCircle, RefreshCcw, Trash2, WandSparkles } from "lucide-react";
+import { ChevronDown, Gift, LoaderCircle, RefreshCcw, RotateCcw, Trash2, WandSparkles } from "lucide-react";
 import { toast } from "sonner";
 import {
   autofillRegistryItemAction,
+  clearItemReservationsAction,
   createRegistryItemAction,
   deleteRegistryItemAction,
   refreshPriceAction,
@@ -164,6 +165,29 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
                 <RefreshCcw className="size-3.5" />
               )}
               Refresh price
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isToolbarPending || item.reserved_quantity < 1}
+              className="border-[var(--border)] bg-white/80 hover:bg-white"
+              onClick={() => {
+                if (!window.confirm(`Reset all purchased quantity for "${item.title}"? This will remove its reservations.`)) {
+                  return;
+                }
+
+                startToolbarTransition(async () => {
+                  const result = await clearItemReservationsAction(item.id);
+                  setToolbarMessage(result.message ?? null);
+                  if (result.status === "success") {
+                    router.refresh();
+                  }
+                });
+              }}
+            >
+              <RotateCcw className="size-3.5" />
+              Reset purchases
             </Button>
             <Button
               type="button"

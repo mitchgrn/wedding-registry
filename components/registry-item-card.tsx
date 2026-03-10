@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
-import { ExternalLink, Gift, Tag } from "lucide-react";
+import { CheckCircle2, ExternalLink, Gift, Tag } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { ReservationForm } from "@/components/reservation-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +16,7 @@ export function RegistryItemCard({
   item: RegistryItemWithStats;
   viewMode?: "list" | "grid";
 }) {
+  const prefersReducedMotion = useReducedMotion();
   const displayPrice =
     item.display_price ??
     formatCurrency(item.manual_price, item.price_currency ?? "USD") ??
@@ -27,12 +31,17 @@ export function RegistryItemCard({
   const storeLabel = getStoreLabel(item.purchase_url);
 
   return (
-    <article
+    <motion.article
+      layout
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+      animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={prefersReducedMotion ? undefined : { y: fullyReserved ? -1 : -4 }}
       className={[
-        "card-floating group overflow-hidden rounded-lg transition-all duration-300",
+        "card-floating group overflow-hidden rounded-[1.4rem] transition-all duration-300 will-change-transform",
         fullyReserved
           ? "border-[var(--deep-space-blue)]/12 bg-[linear-gradient(180deg,rgba(248,251,253,0.98),rgba(238,245,249,0.92))] hover:border-[var(--deep-space-blue)]/20"
-          : "hover:-translate-y-0.5 hover:border-[var(--cerulean)]/30",
+          : "hover:border-[var(--cerulean)]/30 hover:shadow-[0_18px_40px_rgba(0,52,89,0.08)]",
         viewMode === "list"
           ? "grid gap-0 md:grid-cols-[220px_minmax(0,1fr)]"
           : "flex h-full flex-col",
@@ -53,7 +62,7 @@ export function RegistryItemCard({
             className={[
               "object-cover transition-transform duration-700",
               fullyReserved
-                ? "grayscale-[0.35] saturate-[0.7] brightness-[0.94] contrast-[0.88]"
+                ? "scale-[1.01] grayscale-[0.85] saturate-[0.25] brightness-[1.04] contrast-[0.78]"
                 : "saturate-[0.92] brightness-[0.9] contrast-[0.92] group-hover:scale-[1.025]",
             ].join(" ")}
             sizes={
@@ -65,20 +74,32 @@ export function RegistryItemCard({
             <Gift className="size-10 text-border" />
           </div>
         )}
-        <div
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, scaleX: 0.75 }}
+          whileInView={prefersReducedMotion ? undefined : { opacity: 1, scaleX: 1 }}
+          viewport={{ once: true, amount: 0.7 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
           className={[
             "absolute inset-0",
             fullyReserved
-              ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.2),rgba(0,23,31,0.06))]"
+              ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.42),rgba(0,23,31,0.16))]"
               : "bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(0,52,89,0.12))]",
           ].join(" ")}
         />
+        {fullyReserved ? (
+          <div className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-emerald-600/15 bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/20">
+            <CheckCircle2 className="size-3.5" />
+            Purchased
+          </div>
+        ) : null}
 
         {/* Overlay badges */}
         <div className="absolute left-3 top-3">
-          <Badge className="bg-white text-[0.78rem] font-medium normal-case tracking-normal text-[var(--ink-black)] shadow-sm">
-            {fullyReserved ? "All set" : `${item.remaining_quantity} still needed`}
-          </Badge>
+          {!fullyReserved ? (
+            <Badge className="bg-white text-[0.78rem] font-medium normal-case tracking-normal text-[var(--ink-black)] shadow-sm">
+              {item.remaining_quantity} still needed
+            </Badge>
+          ) : null}
         </div>
         <div className="absolute bottom-3 right-3">
           <span className="inline-flex min-h-10 items-center gap-2 rounded-md border border-white/20 bg-[var(--deep-space-blue)]/90 px-3 py-2 text-sm font-semibold text-white backdrop-blur-sm">
@@ -91,17 +112,22 @@ export function RegistryItemCard({
       <div className="flex flex-1 flex-col p-4 md:p-5">
         <p
           className={[
-            "text-[0.68rem] font-semibold uppercase tracking-[0.2em]",
-            fullyReserved ? "text-[var(--ink-black)]/45" : "text-[var(--cerulean)]",
+            "text-xs font-semibold tracking-[0.08em] [font-variant-caps:all-small-caps]",
+            fullyReserved ? "text-emerald-700/80" : "text-[var(--cerulean)]",
           ].join(" ")}
         >
           {storeLabel}
         </p>
-        <h3 className={["text-[1.3rem] leading-tight md:text-[1.4rem]", fullyReserved ? "text-[var(--ink-black)]/78" : ""].join(" ")}>
+        <h3
+          className={[
+            "text-[1.3rem] leading-tight md:text-[1.4rem]",
+            fullyReserved ? "text-[var(--ink-black)]/72 line-through decoration-2 decoration-emerald-700/40" : "",
+          ].join(" ")}
+        >
           {item.title}
         </h3>
         {item.notes && (
-          <p className={["mt-1.5 text-[0.95rem] leading-6", fullyReserved ? "text-[var(--ink-black)]/52" : "text-muted-foreground"].join(" ")}>
+          <p className={["mt-1.5 text-[0.95rem] leading-6", fullyReserved ? "text-[var(--ink-black)]/48" : "text-muted-foreground"].join(" ")}>
             {item.notes}
           </p>
         )}
@@ -110,26 +136,41 @@ export function RegistryItemCard({
           className={[
             "mt-3 rounded-md px-3.5 py-2.5",
             fullyReserved
-              ? "border border-[var(--ink-black)]/8 bg-white/70"
+              ? "border border-emerald-700/15 bg-emerald-50"
               : "border border-[var(--cerulean)]/10 bg-[var(--soft-blue)]",
           ].join(" ")}
         >
-          <div className="flex items-center justify-between text-[0.7rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          <div
+            className={[
+              "flex items-center justify-between text-xs font-medium tracking-[0.03em]",
+              fullyReserved ? "text-emerald-800/75" : "text-muted-foreground",
+            ].join(" ")}
+          >
             <span>Purchased</span>
             <span>{item.reserved_quantity} of {item.desired_quantity}</span>
           </div>
           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border/60">
-            <div
+            <motion.div
+              initial={prefersReducedMotion ? false : { width: 0 }}
+              whileInView={prefersReducedMotion ? undefined : { width: `${reservedPct}%` }}
+              viewport={{ once: true, amount: 0.7 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
               className={[
                 "h-full rounded-full transition-all duration-700",
                 fullyReserved
-                  ? "bg-gradient-to-r from-[var(--deep-space-blue)]/45 to-[var(--ink-black)]/35"
+                  ? "bg-gradient-to-r from-emerald-600 to-emerald-400"
                   : "bg-gradient-to-r from-[var(--cerulean)] to-[var(--fresh-sky)]",
               ].join(" ")}
-              style={{ width: `${reservedPct}%` }}
+              style={prefersReducedMotion ? { width: `${reservedPct}%` } : undefined}
             />
           </div>
         </div>
+
+        {fullyReserved ? (
+          <div className="mt-3 rounded-md border border-emerald-700/15 bg-emerald-600 px-3.5 py-2.5 text-sm font-medium text-white">
+            This gift has already been claimed.
+          </div>
+        ) : null}
 
         {!fullyReserved && (
           <div className="mt-3">
@@ -150,6 +191,6 @@ export function RegistryItemCard({
           </Button>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }

@@ -47,7 +47,7 @@ export async function createReservationAction(_: ActionState, formData: FormData
 
   revalidatePath("/");
   revalidatePath("/admin");
-  return { status: "success", message: "Requested successfully." };
+  return { status: "success", message: "Gift reserved successfully." };
 }
 
 async function upsertRegistryItem(formData: FormData, currentId?: string): Promise<ActionState> {
@@ -210,6 +210,26 @@ export async function toggleItemActiveAction(itemId: string, nextState: boolean)
   revalidatePath("/");
   revalidatePath("/admin");
   return { status: "success", message: nextState ? "Item restored." : "Item archived." };
+}
+
+export async function clearItemReservationsAction(itemId: string): Promise<ActionState> {
+  await requireAdmin();
+
+  const parsed = refreshPriceSchema.safeParse({ itemId });
+  if (!parsed.success) {
+    return { status: "error", message: "Invalid item." };
+  }
+
+  const supabase = createServiceRoleClient();
+  const { error } = await supabase.from("registry_reservations").delete().eq("item_id", itemId);
+
+  if (error) {
+    return { status: "error", message: error.message };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return { status: "success", message: "Purchase quantities reset." };
 }
 
 export async function deleteRegistryItemAction(itemId: string): Promise<ActionState> {
