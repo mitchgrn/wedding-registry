@@ -153,22 +153,22 @@ export function HomePageShell({
           animate: { opacity: 1 },
           transition: { duration: 0.3, delay: stagger(9), ease },
         })}
-        className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/94 px-4 py-3 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md sm:px-6 md:px-12 xl:px-20"
+        className="sticky top-0 z-40 hidden border-b border-[var(--border)] bg-white/94 px-6 py-3 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md sm:block md:px-12 xl:px-20"
       >
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-2 text-xs font-medium text-[var(--ink-black)]/70 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 sm:text-sm">
-          <div className="flex items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+        <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto pb-0.5 text-xs font-medium text-[var(--ink-black)]/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 sm:overflow-visible sm:pb-0 sm:text-sm">
+          <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
             <Gift size={16} className="text-[var(--cerulean)]" />
             <span>{items.length} {items.length === 1 ? "Item" : "Items"}</span>
           </div>
-          <div className="flex items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+          <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
             <CircleCheck size={16} className="text-[var(--fresh-sky)]" />
             <span>{availableCount} Available</span>
           </div>
           {requestedCount > 0 ? (
-              <div className="col-span-2 flex items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:col-auto sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
-                <Heart size={16} className="fill-[var(--deep-space-blue)] text-[var(--deep-space-blue)]" />
-                <span>{requestedCount} Claimed</span>
-              </div>
+            <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+              <Heart size={16} className="fill-[var(--deep-space-blue)] text-[var(--deep-space-blue)]" />
+              <span>{requestedCount} Claimed</span>
+            </div>
           ) : null}
         </div>
       </motion.div>
@@ -179,7 +179,7 @@ export function HomePageShell({
         whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.35, ease }}
-        className="mx-auto max-w-5xl px-4 py-8 sm:px-6 md:px-12 md:py-12 xl:px-20"
+        className="mx-auto max-w-5xl px-4 pb-8 pt-2 sm:px-6 md:px-12 md:py-12 xl:px-20"
       >
         {!envReady ? <EnvAlert /> : null}
 

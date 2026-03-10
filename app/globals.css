@@ -65,9 +65,9 @@
   --secondary:       #ddf1fb;
   --secondary-foreground: var(--deep-space-blue);
 
-  /* Accent — deep space blue for dark surfaces */
-  --accent:          var(--deep-space-blue);
-  --accent-foreground: var(--white);
+  /* Accent — soft blue for hover states */
+  --accent:          #eaf5fb;
+  --accent-foreground: var(--deep-space-blue);
 
   /* Semantic */
   --success:         var(--cerulean);

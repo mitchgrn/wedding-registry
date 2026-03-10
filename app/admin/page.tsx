@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { LayoutGrid, Package } from "lucide-react";
+import { AdminAddSheet } from "@/components/admin-add-sheet";
 import { AdminHeader } from "@/components/admin-header";
 import { AdminItemForm } from "@/components/admin-item-form";
 import { Badge } from "@/components/ui/badge";
@@ -26,13 +27,16 @@ export default async function AdminPage() {
       <AdminHeader email={user?.email} />
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:px-10 md:py-12">
-        <div className="mb-8">
-          <h1 className="text-[2.4rem] italic text-[var(--ink-black)] sm:text-4xl md:text-5xl">Manage registry</h1>
-          <p className="mt-2 text-sm text-[var(--ink-black)]/58">Add, edit, and archive gift items.</p>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-[2.4rem] italic text-[var(--ink-black)] sm:text-4xl md:text-5xl">Manage registry</h1>
+            <p className="mt-2 text-sm text-[var(--ink-black)]/58">Add, edit, and archive gift items.</p>
+          </div>
+          <AdminAddSheet />
         </div>
 
-        <div className="-mx-4 mb-8 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0 md:mb-10">
-          <div className="flex min-w-max gap-3 sm:grid sm:min-w-0 sm:grid-cols-3 sm:gap-4">
+        <div className="mb-8 md:mb-10">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             {[
               { label: "Public items", value: activeCount },
               { label: "Reservations", value: totalReservations },
@@ -40,19 +44,19 @@ export default async function AdminPage() {
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="w-[13rem] rounded-xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.55))] p-4 shadow-[0_16px_40px_rgba(0,23,31,0.05)] sm:w-auto"
+                className="rounded-xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.55))] p-3 shadow-[0_16px_40px_rgba(0,23,31,0.05)] sm:p-4"
               >
-                <p className="text-sm font-medium tracking-[0.03em] text-[var(--cerulean)]">
+                <p className="text-[0.65rem] font-medium uppercase tracking-[0.06em] text-[var(--cerulean)] sm:text-xs sm:tracking-[0.03em]">
                   {stat.label}
                 </p>
-                <p className="mt-1.5 text-[2rem] font-light text-[var(--ink-black)] sm:text-3xl">{stat.value}</p>
+                <p className="mt-1 text-2xl font-light text-[var(--ink-black)] sm:mt-1.5 sm:text-3xl">{stat.value}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)] xl:gap-8">
-          <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+          <aside className="hidden space-y-6 xl:block xl:sticky xl:top-24 xl:self-start">
             <Card className="overflow-hidden border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.42))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
               <CardHeader className="border-b border-[var(--border)] bg-white/70 px-4 py-4 sm:px-5">
                 <div className="flex items-center gap-2">
@@ -84,7 +88,7 @@ export default async function AdminPage() {
                   </Badge>
                 </div>
                 <p className="text-sm text-[var(--ink-black)]/55">
-                  Tap any item to expand its edit form and management actions.
+                  Tap any item to edit. Use the toolbar to archive, reset, or delete.
                 </p>
               </CardHeader>
               <CardContent className="space-y-4 px-3 py-3 sm:px-4 sm:py-4">

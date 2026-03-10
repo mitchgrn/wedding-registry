@@ -15,10 +15,27 @@ import {
   updateRegistryItemAction,
   type ActionState,
 } from "@/app/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,15 +45,17 @@ import type { RegistryItemWithStats } from "@/lib/types";
 
 const initialState: ActionState = { status: "idle" };
 
-export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
+export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWithStats; onSuccess?: () => void; bare?: boolean }) {
   const router = useRouter();
   const action = item ? updateRegistryItemAction.bind(null, item.id) : createRegistryItemAction;
   const [state, formAction, pending] = useActionState(action, initialState);
   const [toolbarMessage, setToolbarMessage] = useState<string | null>(null);
   const [isToolbarPending, startToolbarTransition] = useTransition();
   const [expanded, setExpanded] = useState(!item);
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
   const [draft, setDraft] = useState(() => createDraft(item));
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [confirmAction, setConfirmAction] = useState<null | { title: string; description: string; onConfirm: () => void }>(null);
   const previousItemId = useRef(item?.id);
   const previousUpdatedAt = useRef(item?.updated_at);
   const previousStateMessage = useRef<string | undefined>(undefined);
@@ -84,6 +103,7 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
     }
 
     setFieldErrors({});
+    setEditDrawerOpen(false);
   }, [state.status]);
 
   useEffect(() => {
@@ -92,7 +112,8 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
     }
 
     router.refresh();
-  }, [item, router, state.status]);
+    onSuccess?.();
+  }, [item, onSuccess, router, state.status]);
 
   useEffect(() => {
     if (state.status === "idle" || !state.message) {
@@ -141,180 +162,224 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
     formatCurrency(item?.manual_price ?? null, item?.price_currency ?? "USD") ??
     null;
 
+  const formFields = (
+    <FormFields
+      formAction={formAction}
+      pending={pending}
+      isToolbarPending={isToolbarPending}
+      item={item}
+      draft={draft}
+      setDraft={setDraft}
+      fieldErrors={fieldErrors}
+      setFieldErrors={setFieldErrors}
+      ids={{ titleId, purchaseId, quantityId, sortId, imageId, manualId, notesId }}
+      startToolbarTransition={startToolbarTransition}
+      setToolbarMessage={setToolbarMessage}
+    />
+  );
+
+  // ─── Confirm dialog ──────────────────────────────────────────────────────────
+  const confirmDialog = (
+    <AlertDialog open={Boolean(confirmAction)} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{confirmAction?.title}</AlertDialogTitle>
+          <AlertDialogDescription>{confirmAction?.description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-red-600 text-white hover:bg-red-700"
+            onClick={() => {
+              confirmAction?.onConfirm();
+              setConfirmAction(null);
+            }}
+          >
+            Confirm
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   // ─── Collapsed row (existing items only) ────────────────────────────────────
   if (item) {
     return (
-      <div className="overflow-hidden rounded-xl border border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.38))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
-        <div className="border-b border-[var(--border)] bg-white/50 px-3 py-3 sm:px-4 sm:py-2.5">
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={isToolbarPending}
-              className="h-10 justify-center text-[var(--ink-black)]/65 hover:bg-white hover:text-[var(--deep-space-blue)] sm:h-8"
-              onClick={() =>
-                startToolbarTransition(async () => {
-                  const result = await refreshPriceAction(item.id);
-                  setToolbarMessage(result.message ?? null);
-                })
-              }
-            >
-              {isToolbarPending ? (
-                <LoaderCircle className="size-3.5 animate-spin" />
-              ) : (
-                <RefreshCcw className="size-3.5" />
-              )}
-              Refresh price
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isToolbarPending || item.reserved_quantity < 1}
-              className="h-10 justify-center border-[var(--border)] bg-white/80 hover:bg-white sm:h-8"
-              onClick={() => {
-                if (!window.confirm(`Reset all purchased quantity for "${item.title}"? This will remove its reservations.`)) {
-                  return;
-                }
+      <>
+        {confirmDialog}
 
-                startToolbarTransition(async () => {
-                  const result = await clearItemReservationsAction(item.id);
-                  setToolbarMessage(result.message ?? null);
-                  if (result.status === "success") {
-                    router.refresh();
-                  }
-                });
-              }}
-            >
-              <RotateCcw className="size-3.5" />
-              Reset purchases
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isToolbarPending}
-              className="h-10 justify-center border-[var(--border)] bg-white/80 hover:bg-white sm:h-8"
-              onClick={() =>
-                startToolbarTransition(async () => {
-                  const result = await toggleItemActiveAction(item.id, !item.is_active);
-                  setToolbarMessage(result.message ?? null);
-                })
-              }
-            >
-              {item.is_active ? "Archive" : "Restore"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isToolbarPending}
-              className="col-span-2 h-10 justify-center border-red-200 bg-white/80 text-red-700 hover:bg-red-50 hover:text-red-800 sm:col-auto sm:h-8"
-              onClick={() => {
-                if (!window.confirm(`Delete "${item.title}"? This will also remove any reservations for it.`)) {
-                  return;
+        <div className="overflow-hidden rounded-xl border border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.38))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
+          {/* Action toolbar */}
+          <div className="border-b border-[var(--border)] bg-white/50 px-3 py-2 sm:px-4">
+            <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={isToolbarPending}
+                className="h-9 px-2 text-[var(--ink-black)]/65 hover:bg-white hover:text-[var(--deep-space-blue)] sm:px-3"
+                onClick={() =>
+                  startToolbarTransition(async () => {
+                    const result = await refreshPriceAction(item.id);
+                    setToolbarMessage(result.message ?? null);
+                  })
                 }
-
-                startToolbarTransition(async () => {
-                  const result = await deleteRegistryItemAction(item.id);
-                  setToolbarMessage(result.message ?? null);
-                  if (result.status === "success") {
-                    router.refresh();
-                  }
-                });
-              }}
-            >
-              <Trash2 className="size-3.5" />
-              Delete
-            </Button>
+              >
+                {isToolbarPending ? (
+                  <LoaderCircle className="size-3.5 animate-spin" />
+                ) : (
+                  <RefreshCcw className="size-3.5" />
+                )}
+                <span>Refresh</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isToolbarPending || item.reserved_quantity < 1}
+                className="h-9 border-[var(--border)] bg-white/80 px-2 hover:bg-white sm:px-3"
+                onClick={() =>
+                  setConfirmAction({
+                    title: "Reset purchases?",
+                    description: `This will remove all reservations for "${item.title}".`,
+                    onConfirm: () =>
+                      startToolbarTransition(async () => {
+                        const result = await clearItemReservationsAction(item.id);
+                        setToolbarMessage(result.message ?? null);
+                        if (result.status === "success") router.refresh();
+                      }),
+                  })
+                }
+              >
+                <RotateCcw className="size-3.5" />
+                <span>Reset</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isToolbarPending}
+                className="h-9 border-[var(--border)] bg-white/80 px-2 hover:bg-white sm:px-3"
+                onClick={() =>
+                  startToolbarTransition(async () => {
+                    const result = await toggleItemActiveAction(item.id, !item.is_active);
+                    setToolbarMessage(result.message ?? null);
+                  })
+                }
+              >
+                {item.is_active ? "Archive" : "Restore"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isToolbarPending}
+                className="h-9 border-red-200 bg-white/80 px-2 text-red-700 hover:bg-red-50 hover:text-red-800 sm:px-3"
+                onClick={() =>
+                  setConfirmAction({
+                    title: "Delete item?",
+                    description: `"${item.title}" and all its reservations will be permanently removed.`,
+                    onConfirm: () =>
+                      startToolbarTransition(async () => {
+                        const result = await deleteRegistryItemAction(item.id);
+                        setToolbarMessage(result.message ?? null);
+                        if (result.status === "success") router.refresh();
+                      }),
+                  })
+                }
+              >
+                <Trash2 className="size-3.5" />
+                <span>Delete</span>
+              </Button>
+            </div>
           </div>
+
+          {/* Summary row */}
+          <button
+            type="button"
+            onClick={() => {
+              // On small screens use the drawer; on larger screens expand inline
+              if (window.innerWidth < 1280) {
+                setEditDrawerOpen(true);
+              } else {
+                setExpanded((v) => !v);
+              }
+            }}
+            className="flex w-full items-center gap-3 px-3 py-3 text-left transition hover:bg-[var(--soft-blue)]/45 sm:gap-4 sm:px-4"
+          >
+            {/* Thumbnail */}
+            <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-[var(--soft-blue)] sm:size-16">
+              {item.image_url ? (
+                <Image
+                  src={item.image_url}
+                  alt={item.title}
+                  fill
+                  className="object-cover"
+                  sizes="64px"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <Gift className="size-6 text-border" />
+                </div>
+              )}
+            </div>
+
+            {/* Title + meta */}
+            <div className="min-w-0 flex-1">
+              <p className="line-clamp-1 text-sm font-medium text-[var(--ink-black)]">{item.title}</p>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {displayPrice ? <Badge>{displayPrice}</Badge> : null}
+                <Badge>{item.reserved_quantity}/{item.desired_quantity} reserved</Badge>
+                {!item.is_active ? <Badge tone="warning">Archived</Badge> : null}
+                {item.remaining_quantity === 0 ? <Badge tone="success">Complete</Badge> : null}
+              </div>
+            </div>
+
+            {/* Chevron */}
+            <ChevronDown
+              className={`size-4 shrink-0 text-[var(--cerulean)] transition-transform duration-200 xl:${expanded ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {/* Expandable edit form — desktop only (xl+) */}
+          {expanded && (
+            <div className="hidden border-t border-[var(--border)] xl:block">
+              <div className="bg-[var(--soft-blue)]/35 px-4 py-2 text-sm font-medium text-[var(--deep-space-blue)]">
+                Edit item
+              </div>
+              {formFields}
+            </div>
+          )}
         </div>
 
-        {/* Summary row — always visible */}
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="flex w-full items-start gap-3 px-3 py-3 text-left transition hover:bg-[var(--soft-blue)]/45 sm:items-center sm:gap-4 sm:px-4"
-        >
-          {/* Thumbnail */}
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-[var(--soft-blue)]">
-            {item.image_url ? (
-              <Image
-                src={item.image_url}
-                alt={item.title}
-                fill
-                className="object-cover"
-                sizes="64px"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <Gift className="size-6 text-border" />
-              </div>
-            )}
-          </div>
-
-          {/* Title + meta */}
-          <div className="min-w-0 flex-1">
-            <p className="line-clamp-2 text-sm font-medium text-[var(--ink-black)] sm:truncate">{item.title}</p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {displayPrice ? <Badge>{displayPrice}</Badge> : null}
-              <Badge>{item.reserved_quantity}/{item.desired_quantity} reserved</Badge>
-              {!item.is_active ? <Badge tone="warning">Archived</Badge> : null}
-              {item.remaining_quantity === 0 ? <Badge tone="success">Complete</Badge> : null}
+        {/* Edit drawer — mobile/tablet */}
+        <Drawer open={editDrawerOpen} onOpenChange={setEditDrawerOpen}>
+          <DrawerContent className="flex max-h-[92dvh] flex-col overflow-hidden xl:hidden">
+            <DrawerHeader className="border-b border-[var(--border)]">
+              <DrawerTitle>Edit item</DrawerTitle>
+              <DrawerDescription className="line-clamp-1">{item.title}</DrawerDescription>
+            </DrawerHeader>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {formFields}
             </div>
-          </div>
-
-          {/* Chevron */}
-          <ChevronDown
-            className={`size-4 shrink-0 text-[var(--cerulean)] transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-          />
-        </button>
-
-        {/* Expandable edit form */}
-        {expanded && (
-          <div className="border-t border-[var(--border)]">
-            <div className="bg-[var(--soft-blue)]/35 px-4 py-2 text-sm font-medium text-[var(--deep-space-blue)]">
-              Edit item
-            </div>
-            <FormFields
-              formAction={formAction}
-              pending={pending}
-              isToolbarPending={isToolbarPending}
-              item={item}
-              draft={draft}
-              setDraft={setDraft}
-              fieldErrors={fieldErrors}
-              setFieldErrors={setFieldErrors}
-              ids={{ titleId, purchaseId, quantityId, sortId, imageId, manualId, notesId }}
-              startToolbarTransition={startToolbarTransition}
-              setToolbarMessage={setToolbarMessage}
-            />
-          </div>
-        )}
-      </div>
+          </DrawerContent>
+        </Drawer>
+      </>
     );
   }
 
   // ─── New item form (always open) ─────────────────────────────────────────────
+  if (bare) {
+    return formFields;
+  }
+
   return (
     <div className="overflow-hidden rounded-xl border border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.38))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
       <CardHeader className="border-b border-[var(--border)] bg-white/55 px-4 py-4">
         <CardTitle className="text-base font-medium text-[var(--deep-space-blue)]">New item</CardTitle>
-        <CardDescription>Quick add for mobile.</CardDescription>
+        <CardDescription>Paste a store link, then autofill the rest.</CardDescription>
       </CardHeader>
-      <FormFields
-        formAction={formAction}
-        pending={pending}
-        isToolbarPending={isToolbarPending}
-        draft={draft}
-        setDraft={setDraft}
-        fieldErrors={fieldErrors}
-        setFieldErrors={setFieldErrors}
-        ids={{ titleId, purchaseId, quantityId, sortId, imageId, manualId, notesId }}
-        startToolbarTransition={startToolbarTransition}
-        setToolbarMessage={setToolbarMessage}
-      />
+      {formFields}
     </div>
   );
 }
@@ -388,72 +453,70 @@ function FormFields({
     <form action={formAction} onSubmit={handleSubmit}>
       <CardContent className="space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5">
         <section className="space-y-3">
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-1.5 md:col-span-2">
-              <Label htmlFor={titleId}>Title</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor={titleId}>Title</Label>
+            <Input
+              id={titleId}
+              name="title"
+              value={draft.title}
+              required
+              aria-invalid={Boolean(fieldErrors.title)}
+              className={getFieldClassName(fieldErrors.title)}
+              onChange={(event) => updateField("title", event.target.value)}
+            />
+            {fieldErrors.title ? <p className="text-xs text-red-700">{fieldErrors.title}</p> : null}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor={purchaseId}>Purchase link</Label>
+            <div className="flex flex-col gap-2">
               <Input
-                id={titleId}
-                name="title"
-                value={draft.title}
+                id={purchaseId}
+                name="purchaseUrl"
+                value={draft.purchaseUrl}
+                placeholder="https://"
                 required
-                aria-invalid={Boolean(fieldErrors.title)}
-                className={getFieldClassName(fieldErrors.title)}
-                onChange={(event) => updateField("title", event.target.value)}
+                aria-invalid={Boolean(fieldErrors.purchaseUrl)}
+                className={getFieldClassName(fieldErrors.purchaseUrl)}
+                onChange={(event) => updateField("purchaseUrl", event.target.value)}
               />
-              {fieldErrors.title ? <p className="text-xs text-red-700">{fieldErrors.title}</p> : null}
+              {fieldErrors.purchaseUrl ? <p className="text-xs text-red-700">{fieldErrors.purchaseUrl}</p> : null}
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={isToolbarPending}
+                className="h-10 w-full border-[var(--border)] bg-[var(--soft-blue)] px-4 text-[var(--deep-space-blue)] hover:bg-[var(--soft-blue)]/70"
+                onClick={() =>
+                  startToolbarTransition(async () => {
+                    const result = await autofillRegistryItemAction(draft.purchaseUrl);
+                    setToolbarMessage(result.message ?? null);
+                    if (result.status === "success") {
+                      setDraft((current) => ({
+                        ...current,
+                        purchaseUrl: result.resolvedUrl ?? current.purchaseUrl,
+                        title: current.title.trim() ? current.title : (result.title ?? current.title),
+                        imageUrl: current.imageUrl.trim() ? current.imageUrl : (result.imageUrl ?? current.imageUrl),
+                        notes: current.notes.trim() ? current.notes : (result.notes ?? current.notes),
+                        manualPrice:
+                          current.manualPrice.trim() ? current.manualPrice : formatNumberInput(result.manualPrice),
+                      }));
+                    }
+                  })
+                }
+              >
+                {isToolbarPending ? (
+                  <LoaderCircle className="size-3.5 animate-spin" />
+                ) : (
+                  <WandSparkles className="size-3.5" />
+                )}
+                Autofill from link
+              </Button>
             </div>
+          </div>
 
-            <div className="space-y-1.5 md:col-span-2">
-              <Label htmlFor={purchaseId}>Purchase link</Label>
-              <div className="flex flex-col gap-2">
-                <div className="min-w-0 flex-1 space-y-1.5">
-                  <Input
-                    id={purchaseId}
-                    name="purchaseUrl"
-                    value={draft.purchaseUrl}
-                    placeholder="https://"
-                    required
-                    aria-invalid={Boolean(fieldErrors.purchaseUrl)}
-                    className={getFieldClassName(fieldErrors.purchaseUrl)}
-                    onChange={(event) => updateField("purchaseUrl", event.target.value)}
-                  />
-                  {fieldErrors.purchaseUrl ? <p className="text-xs text-red-700">{fieldErrors.purchaseUrl}</p> : null}
-                </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={isToolbarPending}
-                  className="h-10 w-full shrink-0 border-[var(--border)] bg-[var(--soft-blue)] px-4 text-[var(--deep-space-blue)] hover:bg-[var(--soft-blue)]/70 sm:w-auto"
-                  onClick={() =>
-                    startToolbarTransition(async () => {
-                      const result = await autofillRegistryItemAction(draft.purchaseUrl);
-                      setToolbarMessage(result.message ?? null);
-                      if (result.status === "success") {
-                        setDraft((current) => ({
-                          ...current,
-                          purchaseUrl: result.resolvedUrl ?? current.purchaseUrl,
-                          title: current.title.trim() ? current.title : (result.title ?? current.title),
-                          imageUrl: current.imageUrl.trim() ? current.imageUrl : (result.imageUrl ?? current.imageUrl),
-                          notes: current.notes.trim() ? current.notes : (result.notes ?? current.notes),
-                          manualPrice:
-                            current.manualPrice.trim() ? current.manualPrice : formatNumberInput(result.manualPrice),
-                        }));
-                      }
-                    })
-                  }
-                >
-                  {isToolbarPending ? (
-                    <LoaderCircle className="size-3.5 animate-spin" />
-                  ) : (
-                    <WandSparkles className="size-3.5" />
-                  )}
-                  Autofill
-                </Button>
-              </div>
-            </div>
-
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor={quantityId}>Desired quantity</Label>
+              <Label htmlFor={quantityId}>Quantity</Label>
               <Input
                 id={quantityId}
                 name="desiredQuantity"
@@ -485,19 +548,7 @@ function FormFields({
         </section>
 
         <section className="space-y-3 border-t border-[var(--border)]/70 pt-4">
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor={imageId}>Image URL</Label>
-              <Input
-                id={imageId}
-                name="imageUrl"
-                value={draft.imageUrl}
-                aria-invalid={Boolean(fieldErrors.imageUrl)}
-                className={getFieldClassName(fieldErrors.imageUrl)}
-                onChange={(event) => updateField("imageUrl", event.target.value)}
-              />
-              {fieldErrors.imageUrl ? <p className="text-xs text-red-700">{fieldErrors.imageUrl}</p> : null}
-            </div>
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor={manualId}>Price</Label>
               <Input
@@ -513,46 +564,54 @@ function FormFields({
               />
               {fieldErrors.manualPrice ? <p className="text-xs text-red-700">{fieldErrors.manualPrice}</p> : null}
             </div>
-            <div className="space-y-1.5 md:col-span-2">
-              <Label htmlFor={notesId}>Notes</Label>
-              <Textarea
-                id={notesId}
-                name="notes"
-                value={draft.notes}
-                aria-invalid={Boolean(fieldErrors.notes)}
-                className={getFieldClassName(fieldErrors.notes, true)}
-                onChange={(event) => updateField("notes", event.target.value)}
+            <div className="space-y-1.5">
+              <Label htmlFor={imageId}>Image URL</Label>
+              <Input
+                id={imageId}
+                name="imageUrl"
+                value={draft.imageUrl}
+                aria-invalid={Boolean(fieldErrors.imageUrl)}
+                className={getFieldClassName(fieldErrors.imageUrl)}
+                onChange={(event) => updateField("imageUrl", event.target.value)}
               />
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs text-[var(--ink-black)]/45">{draft.notes.length}/400</p>
-                {fieldErrors.notes ? <p className="text-xs text-red-700">{fieldErrors.notes}</p> : null}
-              </div>
+              {fieldErrors.imageUrl ? <p className="text-xs text-red-700">{fieldErrors.imageUrl}</p> : null}
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={notesId}>Notes</Label>
+            <Textarea
+              id={notesId}
+              name="notes"
+              value={draft.notes}
+              aria-invalid={Boolean(fieldErrors.notes)}
+              className={getFieldClassName(fieldErrors.notes, true)}
+              onChange={(event) => updateField("notes", event.target.value)}
+            />
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-[var(--ink-black)]/45">{draft.notes.length}/400</p>
+              {fieldErrors.notes ? <p className="text-xs text-red-700">{fieldErrors.notes}</p> : null}
             </div>
           </div>
         </section>
 
-        <section className="flex flex-col gap-3 border-t border-[var(--border)]/70 pt-4 md:flex-row md:items-center md:justify-between">
-          <div className="rounded-lg border border-[var(--border)] bg-white/80 px-3 py-3 sm:py-2.5">
+        <section className="flex flex-col gap-3 border-t border-[var(--border)]/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="rounded-lg border border-[var(--border)] bg-white/80 px-3 py-2.5">
             <div className="flex items-center gap-3">
               <Checkbox
                 id={activeId}
                 name="isActive"
                 checked={draft.isActive}
-                onChange={(event) => setDraft((current) => ({ ...current, isActive: event.target.checked }))}
+                onCheckedChange={(checked) => setDraft((current) => ({ ...current, isActive: checked === true }))}
               />
-              <div>
-                <Label htmlFor={activeId} className="cursor-pointer">
-                  Visible on registry
-                </Label>
-              </div>
+              <Label htmlFor={activeId} className="cursor-pointer">
+                Visible on registry
+              </Label>
             </div>
           </div>
-          <div className="flex items-center justify-end gap-3">
-            <Button type="submit" disabled={pending} className="h-10 w-full bg-[var(--deep-space-blue)] text-white hover:bg-[#00456f] md:w-auto">
-              {pending ? <LoaderCircle className="size-4 animate-spin" /> : null}
-              {item ? "Save" : "Add item"}
-            </Button>
-          </div>
+          <Button type="submit" disabled={pending} className="h-11 w-full bg-[var(--deep-space-blue)] text-white hover:bg-[#00456f] sm:h-10 sm:w-auto">
+            {pending ? <LoaderCircle className="size-4 animate-spin" /> : null}
+            {item ? "Save changes" : "Add item"}
+          </Button>
         </section>
       </CardContent>
     </form>
@@ -590,7 +649,7 @@ function formatNumberInput(value: number | null | undefined) {
 }
 
 function getFieldClassName(hasError?: string, isTextarea = false) {
-  const base = isTextarea ? "min-h-28 text-base sm:text-sm" : "h-10 text-base sm:h-9 sm:text-sm";
+  const base = isTextarea ? "min-h-24 text-base sm:text-sm" : "h-11 text-base sm:h-9 sm:text-sm";
   const tone = hasError
     ? "border-red-300 bg-red-50/70 focus:border-red-400 focus:ring-red-100"
     : "border-[var(--border)] bg-white/85 focus:border-[var(--cerulean)]/35 focus:ring-[var(--fresh-sky)]/15";
