@@ -84,10 +84,10 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
   return (
     <div className="space-y-8">
       <motion.div
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
         whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.35 }}
-        transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.28, ease: [0.2, 0, 0, 1] }}
       >
         <Card className="rounded-[1.35rem] border-[var(--cerulean)]/10 bg-[linear-gradient(180deg,rgba(248,252,254,0.98),rgba(255,255,255,0.98))] shadow-[0_10px_30px_rgba(0,52,89,0.04)]">
           <CardContent className="space-y-5 px-4 pb-4 pt-4 md:px-5">
@@ -151,9 +151,8 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
 
             <div className="flex flex-col gap-3 border-t border-border/80 pt-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <motion.label
+                <label
                   htmlFor="registry-hide-purchased"
-                  whileHover={prefersReducedMotion ? undefined : { y: -1 }}
                   className={[
                     "group flex cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors sm:min-w-[18rem] sm:max-w-[24rem] sm:flex-1",
                     hidePurchased
@@ -172,9 +171,9 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
                     />
                     <Check className="pointer-events-none absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 transition peer-checked:opacity-100" />
                   </span>
-                </motion.label>
+                </label>
 
-                <motion.div layout className="inline-flex w-full rounded-lg border border-border bg-[var(--soft-blue)] p-1 sm:w-auto sm:shrink-0">
+                <div className="inline-flex w-full rounded-lg border border-border bg-[var(--soft-blue)] p-1 sm:w-auto sm:shrink-0">
                   <Button
                     type="button"
                     size="sm"
@@ -197,7 +196,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
                     <Grid3X3 className="size-4" />
                     Grid
                   </Button>
-                </motion.div>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -208,11 +207,10 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
         {filteredItems.length ? (
           <motion.div
             key={viewMode}
-            layout
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0, y: 8 }}
-            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
+            animate={prefersReducedMotion ? undefined : { opacity: 1 }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
             className={[
               viewMode === "grid" ? "grid gap-6 md:grid-cols-2 xl:grid-cols-3" : "space-y-5",
             ].join(" ")}
@@ -224,10 +222,10 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
         ) : (
           <motion.div
             key="empty"
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
+            animate={prefersReducedMotion ? undefined : { opacity: 1 }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
           >
             <EmptyState
               icon={<SearchX className="size-5" />}

@@ -143,7 +143,7 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
   // ─── Collapsed row (existing items only) ────────────────────────────────────
   if (item) {
     return (
-      <div className="card-elevated overflow-hidden rounded-xl border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.38))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
+      <div className="overflow-hidden rounded-xl border border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.38))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
         <div className="border-b border-[var(--border)] bg-white/50 px-4 py-2.5">
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button
@@ -304,7 +304,7 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
 
   // ─── New item form (always open) ─────────────────────────────────────────────
   return (
-    <div className="card-elevated overflow-hidden rounded-xl border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.38))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
+    <div className="overflow-hidden rounded-xl border border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.38))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
       <CardHeader className="border-b border-[var(--border)] bg-white/55 px-4 py-4">
         <CardTitle className="text-base font-medium text-[var(--deep-space-blue)]">New item</CardTitle>
         <CardDescription>Quick add for mobile.</CardDescription>

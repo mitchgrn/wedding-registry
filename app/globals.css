@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@theme {
+  /* Brand colors — static hex so Tailwind can generate opacity-aware utilities */
+  --color-ink-black:       #00171f;
+  --color-deep-space-blue: #003459;
+  --color-cerulean:        #007ea7;
+  --color-fresh-sky:       #00a8e8;
+  --color-soft-blue:       #eaf5fb;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -18,11 +27,7 @@
   --color-warning: var(--warning);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  /* Brand colors available as Tailwind utilities */
-  --color-deep-space-blue: var(--deep-space-blue);
-  --color-cerulean: var(--cerulean);
-  --color-fresh-sky: var(--fresh-sky);
-  --color-ink-black: var(--ink-black);
+  /* non-brand semantic tokens — inline is fine, no opacity modifiers needed */
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
@@ -104,73 +109,51 @@ h1, h2, h3, h4 {
 
 a, button {
   transition:
-    transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 160ms ease,
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
+    opacity 180ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 180ms cubic-bezier(0.2, 0, 0, 1),
+    border-color 180ms cubic-bezier(0.2, 0, 0, 1),
+    color 180ms cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 180ms cubic-bezier(0.2, 0, 0, 1),
+    outline-color 180ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 p {
   text-wrap: pretty;
 }
 
-.rule {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
-}
 
-.card-elevated {
-  background: var(--white);
-  border: 1px solid rgba(0, 52, 89, 0.1);
-}
-
-.card-floating {
-  background: var(--white);
-  border: 1px solid rgba(0, 52, 89, 0.1);
-}
-
-.celebration-shell {
-  position: relative;
-  overflow: hidden;
-}
-
-.confetti-burst {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
 
 .confetti-piece {
   position: absolute;
   left: var(--confetti-left);
-  top: -0.2rem;
-  width: 0.5rem;
-  height: 0.9rem;
+  top: -0.35rem;
+  width: 0.62rem;
+  height: 1.12rem;
   border-radius: 999px;
   background: var(--confetti-color);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.24) inset;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.32) inset,
+    0 6px 14px rgba(0, 23, 31, 0.14);
   opacity: 0;
-  transform: translate3d(0, -0.4rem, 0) rotate(0deg) scale(0.8);
+  transform: translate3d(0, -0.8rem, 0) rotate(0deg) scale(0.78);
 }
 
-.celebration-shell[data-celebrate="true"] .confetti-piece {
+[data-celebrate="true"] .confetti-piece {
   animation: confetti-fall var(--confetti-duration) cubic-bezier(0.18, 0.89, 0.32, 1.18) both;
   animation-delay: var(--confetti-delay);
 }
 
 .confetti-piece:nth-child(3n) {
-  width: 0.42rem;
-  height: 1rem;
+  width: 0.5rem;
+  height: 1.2rem;
 }
 
 .confetti-piece:nth-child(4n) {
-  width: 0.72rem;
-  height: 0.42rem;
+  width: 0.86rem;
+  height: 0.5rem;
 }
 
-.celebration-shell::after {
+[data-celebrate="true"]::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -181,24 +164,12 @@ p {
     radial-gradient(circle at 48% 18%, rgba(0, 52, 89, 0.18) 0, rgba(0, 52, 89, 0.18) 0.2rem, transparent 0.24rem),
     radial-gradient(circle at 68% 28%, rgba(0, 126, 167, 0.2) 0, rgba(0, 126, 167, 0.2) 0.24rem, transparent 0.28rem),
     radial-gradient(circle at 78% 68%, rgba(0, 168, 232, 0.24) 0, rgba(0, 168, 232, 0.24) 0.26rem, transparent 0.3rem),
-    radial-gradient(circle at 90% 34%, rgba(0, 52, 89, 0.18) 0, rgba(0, 52, 89, 0.18) 0.18rem, transparent 0.22rem);
+    radial-gradient(circle at 90% 34%, rgba(0, 52, 89, 0.18) 0, rgba(0, 52, 89, 0.18) 0.18rem, transparent 0.22rem),
+    radial-gradient(circle at 58% 52%, rgba(255, 184, 0, 0.28) 0, rgba(255, 184, 0, 0.28) 0.26rem, transparent 0.3rem),
+    radial-gradient(circle at 34% 40%, rgba(16, 185, 129, 0.24) 0, rgba(16, 185, 129, 0.24) 0.24rem, transparent 0.28rem);
   opacity: 0;
-  transform: scale(0.96);
-}
-
-.celebration-shell[data-celebrate="true"]::after {
-  animation: confetti-bloom 900ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  transform: scale(0.94);
+  animation: confetti-bloom 1050ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes confetti-bloom {
@@ -207,25 +178,25 @@ p {
     transform: scale(0.9);
   }
   15% {
-    opacity: 0.95;
+    opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: scale(1.08);
+    transform: scale(1.14);
   }
 }
 
 @keyframes confetti-fall {
   0% {
     opacity: 0;
-    transform: translate3d(0, -0.8rem, 0) rotate(0deg) scale(0.7);
+    transform: translate3d(0, -1.1rem, 0) rotate(0deg) scale(0.72);
   }
   12% {
     opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: translate3d(var(--confetti-drift), 10rem, 0) rotate(var(--confetti-rotate)) scale(1);
+    transform: translate3d(var(--confetti-drift), 12rem, 0) rotate(var(--confetti-rotate)) scale(1.08);
   }
 }
 

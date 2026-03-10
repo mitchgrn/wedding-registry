@@ -17,7 +17,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "card-elevated flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.45))] px-6 py-12 text-center",
+        "flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.45))] px-6 py-12 text-center",
         className,
       )}
     >

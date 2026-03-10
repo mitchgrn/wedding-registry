@@ -9,7 +9,11 @@ import { RegistryBrowser } from "@/components/registry-browser";
 import { ScrollHint } from "@/components/scroll-hint";
 import type { RegistryItemWithStats } from "@/lib/types";
 
-const pageEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
+// Stripe-style easing: quick, precise, confident
+const ease: [number, number, number, number] = [0.2, 0, 0, 1];
+
+// Stagger helper — each index adds 60ms
+const stagger = (i: number) => i * 0.06;
 
 export function HomePageShell({
   items,
@@ -22,92 +26,93 @@ export function HomePageShell({
   const availableCount = items.filter((item) => item.remaining_quantity > 0).length;
   const requestedCount = items.reduce((sum, item) => sum + item.reserved_quantity, 0);
 
+  const fade = (i = 0) =>
+    prefersReducedMotion
+      ? {}
+      : {
+          initial: { opacity: 0, y: 6 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.3, delay: stagger(i), ease },
+        };
+
   return (
     <main className="min-h-screen bg-white">
       <header className="relative overflow-hidden border-b border-[var(--border)]">
-        <motion.div
+        {/* Static, very light gradient — no animation */}
+        <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[var(--fresh-sky)]/[0.06] via-white to-[var(--cerulean)]/[0.04]"
-          animate={prefersReducedMotion ? undefined : { opacity: [0.72, 1, 0.78] }}
-          transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[var(--fresh-sky)]/[0.04] via-white to-transparent"
         />
 
         <div className="relative mx-auto flex max-w-5xl flex-col items-center px-6 pb-4 pt-6 md:pb-6 md:pt-10 xl:px-20">
           <motion.p
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: pageEase }}
+            {...fade(0)}
             className="text-sm font-semibold uppercase tracking-[0.3em] text-[var(--cerulean)]"
           >
             Wedding Registry
           </motion.p>
 
           <motion.h1
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.08, ease: pageEase }}
+            {...fade(1)}
             className="mt-2 text-center font-[family-name:var(--font-display)] text-[clamp(2.8rem,6vw,4rem)] italic leading-[1] tracking-[-0.01em] text-[var(--ink-black)]"
           >
             Taylor &amp; Mitch
           </motion.h1>
 
           <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, scaleY: 0.4 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, scaleY: 1 }}
-            transition={{ duration: 0.6, delay: 0.14, ease: pageEase }}
-            className="mt-5 h-7 w-px origin-top bg-gradient-to-b from-[var(--cerulean)]/20 to-[var(--fresh-sky)]/40"
+            {...(prefersReducedMotion ? {} : {
+              initial: { opacity: 0, scaleY: 0 },
+              animate: { opacity: 1, scaleY: 1 },
+              transition: { duration: 0.4, delay: stagger(2), ease },
+            })}
+            style={{ transformOrigin: "top" }}
+            className="mt-5 h-7 w-px bg-gradient-to-b from-[var(--cerulean)]/20 to-[var(--fresh-sky)]/40"
           />
 
+          {/* Hero photo — static, no float */}
           <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.96, y: 10 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.75, delay: 0.16, ease: pageEase }}
+            {...(prefersReducedMotion ? {} : {
+              initial: { opacity: 0, scale: 0.98 },
+              animate: { opacity: 1, scale: 1 },
+              transition: { duration: 0.5, delay: stagger(3), ease },
+            })}
             className="relative mt-5"
           >
-            <motion.div
+            <div
               aria-hidden="true"
-              className="absolute -inset-1.5 border border-[var(--cerulean)]/20 md:-inset-3"
-              animate={prefersReducedMotion ? undefined : { opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 5.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+              className="absolute -inset-1.5 border border-[var(--cerulean)]/15 md:-inset-3"
             />
-            <div className="relative h-[300px] w-[226px] overflow-hidden shadow-[0_12px_48px_rgba(0,23,31,0.16),0_4px_16px_rgba(0,52,89,0.1)] md:h-[400px] md:w-[300px]">
-              <motion.div
-                animate={prefersReducedMotion ? undefined : { y: [0, -5, 0], scale: [1, 1.015, 1] }}
-                transition={{ duration: 7.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-                className="h-full w-full"
-              >
-                <Image
-                  src={heroPhoto}
-                  alt="Taylor and Mitch"
-                  fill
-                  priority
-                  className="object-cover object-[center_18%]"
-                  sizes="(max-width: 768px) 226px, 300px"
-                />
-              </motion.div>
+            <div className="relative h-[300px] w-[226px] overflow-hidden shadow-[0_8px_32px_rgba(0,23,31,0.12),0_2px_8px_rgba(0,52,89,0.08)] md:h-[400px] md:w-[300px]">
+              <Image
+                src={heroPhoto}
+                alt="Taylor and Mitch"
+                fill
+                priority
+                className="object-cover object-[center_18%]"
+                sizes="(max-width: 768px) 226px, 300px"
+              />
             </div>
           </motion.div>
 
           <motion.p
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.22, ease: pageEase }}
+            {...fade(4)}
             className="mt-5 text-sm font-medium uppercase tracking-[0.2em] text-[var(--ink-black)]/50"
           >
             Taylor &amp; Mitch, 2026
           </motion.p>
 
           <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, scaleY: 0.4 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, scaleY: 1 }}
-            transition={{ duration: 0.6, delay: 0.26, ease: pageEase }}
-            className="mt-4 h-7 w-px origin-top bg-gradient-to-b from-[var(--fresh-sky)]/40 to-[var(--cerulean)]/20"
+            {...(prefersReducedMotion ? {} : {
+              initial: { opacity: 0, scaleY: 0 },
+              animate: { opacity: 1, scaleY: 1 },
+              transition: { duration: 0.4, delay: stagger(5), ease },
+            })}
+            style={{ transformOrigin: "top" }}
+            className="mt-4 h-7 w-px bg-gradient-to-b from-[var(--fresh-sky)]/40 to-[var(--cerulean)]/20"
           />
 
           <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, delay: 0.3, ease: pageEase }}
+            {...fade(6)}
             className="mt-4 text-center"
           >
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--cerulean)]">
@@ -130,29 +135,25 @@ export function HomePageShell({
           </motion.div>
 
           <motion.p
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.62, delay: 0.38, ease: pageEase }}
+            {...fade(7)}
             className="mt-4 max-w-md text-center text-lg leading-relaxed text-[var(--ink-black)]/60"
           >
             Browse the list, buy from the store, then mark what you&apos;re covering so everyone stays in the loop.
           </motion.p>
 
-          <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.46, ease: pageEase }}
-          >
+          <motion.div {...fade(8)}>
             <ScrollHint />
           </motion.div>
         </div>
       </header>
 
       <motion.div
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
-        animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-        transition={{ duration: 0.58, delay: 0.48, ease: pageEase }}
-        className="sticky top-0 z-30 border-b border-[var(--border)] bg-white/90 px-6 py-3 backdrop-blur-sm md:px-12 xl:px-20"
+        {...(prefersReducedMotion ? {} : {
+          initial: { opacity: 0 },
+          animate: { opacity: 1 },
+          transition: { duration: 0.3, delay: stagger(9), ease },
+        })}
+        className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/94 px-6 py-3 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md md:px-12 xl:px-20"
       >
         <div className="mx-auto flex max-w-5xl items-center justify-center gap-6 text-sm font-medium text-[var(--ink-black)]/70">
           <div className="flex items-center gap-2">
@@ -177,10 +178,11 @@ export function HomePageShell({
       </motion.div>
 
       <motion.section
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+        id="registry-section"
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
         whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.1 }}
-        transition={{ duration: 0.72, ease: pageEase }}
+        viewport={{ once: true, amount: 0.05 }}
+        transition={{ duration: 0.35, ease }}
         className="mx-auto max-w-5xl px-6 py-10 md:px-12 md:py-12 xl:px-20"
       >
         {!envReady ? <EnvAlert /> : null}
@@ -188,7 +190,7 @@ export function HomePageShell({
         {items.length ? (
           <RegistryBrowser items={items} />
         ) : (
-          <div className="card-elevated rounded-lg border-dashed p-16 text-center text-base text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-[rgba(0,52,89,0.1)] bg-white p-16 text-center text-base text-muted-foreground">
             Add your first item from the admin screen once Supabase is configured.
           </div>
         )}

@@ -32,16 +32,15 @@ export function RegistryItemCard({
 
   return (
     <motion.article
-      layout
-      initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
-      animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-      transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={prefersReducedMotion ? undefined : { y: fullyReserved ? -1 : -4 }}
+      initial={prefersReducedMotion ? false : { opacity: 0 }}
+      animate={prefersReducedMotion ? undefined : { opacity: 1 }}
+      transition={{ duration: 0.28, ease: [0.2, 0, 0, 1] }}
+      whileHover={undefined}
       className={[
-        "card-floating group overflow-hidden rounded-[1.4rem] transition-all duration-300 will-change-transform",
+        "group overflow-hidden rounded-[1.4rem] border border-[rgba(0,52,89,0.1)] bg-white shadow-[0_1px_4px_rgba(0,23,31,0.05)] transition-[box-shadow,border-color,transform] duration-200 will-change-transform",
         fullyReserved
           ? "border-[var(--deep-space-blue)]/12 bg-[linear-gradient(180deg,rgba(248,251,253,0.98),rgba(238,245,249,0.92))] hover:border-[var(--deep-space-blue)]/20"
-          : "hover:border-[var(--cerulean)]/30 hover:shadow-[0_18px_40px_rgba(0,52,89,0.08)]",
+          : "hover:border-[var(--cerulean)]/20 hover:shadow-[0_4px_16px_rgba(0,23,31,0.09),0_1px_4px_rgba(0,23,31,0.05)]",
         viewMode === "list"
           ? "grid gap-0 md:grid-cols-[220px_minmax(0,1fr)]"
           : "flex h-full flex-col",
@@ -74,11 +73,7 @@ export function RegistryItemCard({
             <Gift className="size-10 text-border" />
           </div>
         )}
-        <motion.div
-          initial={prefersReducedMotion ? false : { opacity: 0, scaleX: 0.75 }}
-          whileInView={prefersReducedMotion ? undefined : { opacity: 1, scaleX: 1 }}
-          viewport={{ once: true, amount: 0.7 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
+        <div
           className={[
             "absolute inset-0",
             fullyReserved
@@ -154,7 +149,7 @@ export function RegistryItemCard({
               initial={prefersReducedMotion ? false : { width: 0 }}
               whileInView={prefersReducedMotion ? undefined : { width: `${reservedPct}%` }}
               viewport={{ once: true, amount: 0.7 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
+              transition={{ duration: 0.6, ease: [0.2, 0, 0, 1], delay: 0.1 }}
               className={[
                 "h-full rounded-full transition-all duration-700",
                 fullyReserved

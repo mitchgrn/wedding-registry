@@ -22,7 +22,7 @@ export default async function AdminLoginPage({
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(0,168,232,0.12),transparent_28%),linear-gradient(180deg,rgba(234,245,251,0.42),rgba(255,255,255,1)_24%)] px-4 py-10 sm:px-6 sm:py-12">
-      <Card className="card-floating w-full max-w-md overflow-hidden border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.99),rgba(234,245,251,0.62))] shadow-[0_20px_60px_rgba(0,23,31,0.08)]">
+      <Card className="w-full max-w-md overflow-hidden border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.99),rgba(234,245,251,0.62))] shadow-[0_20px_60px_rgba(0,23,31,0.08)]">
         <CardHeader className="border-b border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.72))] pb-7">
           <CardTitle className="text-4xl italic text-[var(--ink-black)]">Sign in</CardTitle>
         </CardHeader>

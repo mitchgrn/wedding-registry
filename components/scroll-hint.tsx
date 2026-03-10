@@ -1,38 +1,75 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 
 export function ScrollHint() {
   const [visible, setVisible] = useState(true);
   const prefersReducedMotion = useReducedMotion();
+  const visibleRef = useRef(true);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY < 80);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const target = document.getElementById("registry-section");
+
+    if (!target) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const nextVisible = entry.intersectionRatio < 0.28;
+
+        if (nextVisible !== visibleRef.current) {
+          visibleRef.current = nextVisible;
+          setVisible(nextVisible);
+        }
+      },
+      {
+        root: null,
+        threshold: [0, 0.12, 0.28, 0.45],
+        rootMargin: "0px 0px -8% 0px",
+      },
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   return (
     <motion.button
       onClick={() => window.scrollTo({ top: window.innerHeight * 0.7, behavior: "smooth" })}
       aria-label="Scroll to registry"
-      initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+      initial={false}
       animate={
         prefersReducedMotion
           ? undefined
-          : { opacity: visible ? 1 : 0, y: visible ? 0 : 4 }
+          : {
+              opacity: visible ? 1 : 0,
+              y: visible ? 0 : -10,
+              scale: visible ? 1 : 0.96,
+            }
       }
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className={`mt-5 mb-2 flex flex-col items-center gap-1 transition-opacity duration-500 ${visible ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      transition={{ duration: 0.32, ease: [0.2, 0, 0, 1] }}
+      className={`mt-5 mb-2 flex flex-col items-center gap-1.5 transition-[pointer-events] ${visible ? "pointer-events-auto" : "pointer-events-none"}`}
     >
-      <span className="text-sm font-medium tracking-wide text-[var(--ink-black)]/40">
+      <span className="text-sm font-medium text-[var(--ink-black)]/40">
         Browse registry
       </span>
       <motion.div
-        animate={prefersReducedMotion ? undefined : { y: [0, 6, 0] }}
+        aria-hidden="true"
+        animate={
+          prefersReducedMotion
+            ? undefined
+            : {
+                y: [0, 6, 0],
+                opacity: [0.35, 0.75, 0.35],
+              }
+        }
         transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-        className="text-[var(--ink-black)]/30"
+        className="text-[var(--ink-black)]/40"
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path
