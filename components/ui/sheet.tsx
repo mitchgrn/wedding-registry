@@ -25,7 +25,7 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  "fixed z-50 flex flex-col gap-4 border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.99),rgba(234,245,251,0.98))] p-4 shadow-xl transition ease-in-out data-[state=closed]:duration-200 data-[state=open]:duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out",
+  "fixed z-50 flex flex-col gap-4 border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.99),rgba(234,245,251,0.98))] p-4 shadow-xl transition ease-in-out data-[state=closed]:duration-200 data-[state=open]:duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out",
   {
     variants: {
       side: {
@@ -57,7 +57,7 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-2 text-[var(--ink-black)]/65 transition-opacity hover:bg-white hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:pointer-events-none">
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-2 text-ink-black/65 transition-opacity hover:bg-white hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:pointer-events-none">
         <X className="size-5" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -86,7 +86,7 @@ const SheetTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("text-sm font-semibold tracking-[0.03em] text-[var(--cerulean)]", className)}
+    className={cn("text-sm font-semibold tracking-[0.03em] text-cerulean", className)}
     {...props}
   />
 ));
@@ -98,7 +98,7 @@ const SheetDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-[var(--ink-black)]/55", className)}
+    className={cn("text-sm text-ink-black/55", className)}
     {...props}
   />
 ));

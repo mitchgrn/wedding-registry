@@ -36,6 +36,10 @@ function getSortablePrice(item: RegistryItemWithStats) {
   return item.manual_price ?? item.price_amount ?? Number.POSITIVE_INFINITY;
 }
 
+function isPurchased(item: RegistryItemWithStats) {
+  return item.remaining_quantity <= 0 || item.reserved_quantity >= item.desired_quantity;
+}
+
 export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("title");
@@ -55,7 +59,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
 
   const filteredItems = items
     .filter((item) => {
-      if (hidePurchased && item.remaining_quantity <= 0) {
+      if (hidePurchased && isPurchased(item)) {
         return false;
       }
 
@@ -77,8 +81,8 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
     .sort((left, right) => {
       switch (sortBy) {
         case "unpurchased":
-          if ((left.remaining_quantity > 0) !== (right.remaining_quantity > 0)) {
-            return left.remaining_quantity > 0 ? -1 : 1;
+          if (isPurchased(left) !== isPurchased(right)) {
+            return isPurchased(left) ? 1 : -1;
           }
           return left.title.localeCompare(right.title);
         case "title":

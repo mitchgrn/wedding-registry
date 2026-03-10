@@ -156,7 +156,7 @@ export function GoogleOneTap() {
   }
 
   if (!clientId) {
-    return <p className="text-sm text-[var(--ink-black)]/58">Add `NEXT_PUBLIC_GOOGLE_CLIENT_ID` to enable Google sign-in.</p>;
+    return <p className="text-sm text-ink-black/58">Add `NEXT_PUBLIC_GOOGLE_CLIENT_ID` to enable Google sign-in.</p>;
   }
 
   return (
@@ -170,11 +170,11 @@ export function GoogleOneTap() {
 
       <div
         id={buttonId}
-        className="min-h-[44px] rounded-full border border-[var(--border)] bg-white/95 p-0.5 shadow-[0_10px_24px_rgba(0,23,31,0.06)]"
+        className="min-h-[44px] rounded-full border border-border bg-white/95 p-0.5 shadow-[0_10px_24px_rgba(0,23,31,0.06)]"
       />
 
-      {message ? <p className="text-sm text-[var(--ink-black)]/58">{message}</p> : null}
-      {error ? <p className="text-sm text-[var(--warning)]">{error}</p> : null}
+      {message ? <p className="text-sm text-ink-black/58">{message}</p> : null}
+      {error ? <p className="text-sm text-warning">{error}</p> : null}
 
       {loading ? (
         <Button type="button" className="w-full" disabled>

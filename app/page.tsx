@@ -4,5 +4,5 @@ import { hasClientEnv, serverEnv } from "@/lib/env";
 
 export default async function HomePage() {
   const items = hasClientEnv() && serverEnv.success ? await getPublicRegistryItems() : [];
-  return <HomePageShell items={items} envReady={hasClientEnv() && serverEnv.success} />;
+  return <HomePageShell items={items} />;
 }

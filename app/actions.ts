@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { lookupPrice, scrapeProductPage } from "@/lib/price";
-import { refreshPriceSchema, registryItemSchema, reservationSchema } from "@/lib/schemas";
+import { adminReservationAdjustmentSchema, refreshPriceSchema, registryItemSchema, reservationSchema } from "@/lib/schemas";
 import { requireAdmin } from "@/lib/auth";
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 
@@ -229,7 +229,90 @@ export async function clearItemReservationsAction(itemId: string): Promise<Actio
 
   revalidatePath("/");
   revalidatePath("/admin");
-  return { status: "success", message: "Purchase quantities reset." };
+  return { status: "success", message: "All purchases cleared." };
+}
+
+export async function adjustItemReservationsAction(itemId: string, direction: "increment" | "decrement"): Promise<ActionState> {
+  await requireAdmin();
+
+  const parsed = adminReservationAdjustmentSchema.safeParse({ itemId, direction });
+  if (!parsed.success) {
+    return { status: "error", message: "Invalid purchase adjustment." };
+  }
+
+  const supabase = createServiceRoleClient();
+
+  const { data: item, error: itemError } = await supabase
+    .from("registry_items")
+    .select("id, title, desired_quantity")
+    .eq("id", itemId)
+    .single();
+
+  if (itemError || !item) {
+    return { status: "error", message: "Item not found." };
+  }
+
+  const { data: reservations, error: reservationsError } = await supabase
+    .from("registry_reservations")
+    .select("id, guest_name, quantity, created_at")
+    .eq("item_id", itemId)
+    .order("created_at", { ascending: false });
+
+  if (reservationsError) {
+    return { status: "error", message: reservationsError.message };
+  }
+
+  const reservedQuantity = (reservations ?? []).reduce((sum, reservation) => sum + reservation.quantity, 0);
+
+  if (direction === "increment") {
+    if (reservedQuantity >= item.desired_quantity) {
+      return { status: "error", message: "This item is already fully reserved." };
+    }
+
+    const { error } = await supabase.from("registry_reservations").insert({
+      item_id: itemId,
+      guest_name: "Admin adjustment",
+      quantity: 1,
+    });
+
+    if (error) {
+      return { status: "error", message: error.message };
+    }
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { status: "success", message: "Purchase count increased." };
+  }
+
+  if (reservedQuantity < 1) {
+    return { status: "error", message: "There are no purchases to remove." };
+  }
+
+  const targetReservation =
+    reservations?.find((reservation) => reservation.guest_name === "Admin adjustment") ??
+    reservations?.[0];
+
+  if (!targetReservation) {
+    return { status: "error", message: "There are no purchases to remove." };
+  }
+
+  const mutation =
+    targetReservation.quantity > 1
+      ? supabase
+          .from("registry_reservations")
+          .update({ quantity: targetReservation.quantity - 1 })
+          .eq("id", targetReservation.id)
+      : supabase.from("registry_reservations").delete().eq("id", targetReservation.id);
+
+  const { error } = await mutation;
+
+  if (error) {
+    return { status: "error", message: error.message };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return { status: "success", message: "Purchase count decreased." };
 }
 
 export async function deleteRegistryItemAction(itemId: string): Promise<ActionState> {

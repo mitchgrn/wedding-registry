@@ -22,12 +22,12 @@ export function EmptyState({
       )}
     >
       {icon ? (
-        <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-[var(--cerulean)]/15 bg-white text-[var(--cerulean)] shadow-sm">
+        <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-cerulean/15 bg-white text-cerulean shadow-sm">
           {icon}
         </div>
       ) : null}
       <div className="max-w-sm space-y-2">
-        <h3 className="text-lg font-semibold tracking-tight text-[var(--ink-black)]">{title}</h3>
+        <h3 className="text-lg font-semibold tracking-tight text-ink-black">{title}</h3>
         {description ? <p className="text-sm leading-relaxed text-muted-foreground">{description}</p> : null}
       </div>
       {actions ? <div className="mt-6 flex flex-wrap items-center justify-center gap-3">{actions}</div> : null}

@@ -4,7 +4,7 @@ import { CircleCheck, Gift, Heart } from "lucide-react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import heroPhoto from "@/app/images/us.jpg";
-import { EnvAlert } from "@/components/env-alert";
+import { EmptyState } from "@/components/ui/empty-state";
 import { RegistryBrowser } from "@/components/registry-browser";
 import { ScrollHint } from "@/components/scroll-hint";
 import type { RegistryItemWithStats } from "@/lib/types";
@@ -17,10 +17,8 @@ const stagger = (i: number) => i * 0.06;
 
 export function HomePageShell({
   items,
-  envReady,
 }: {
   items: RegistryItemWithStats[];
-  envReady: boolean;
 }) {
   const prefersReducedMotion = useReducedMotion();
   const availableCount = items.filter((item) => item.remaining_quantity > 0).length;
@@ -37,24 +35,24 @@ export function HomePageShell({
 
   return (
     <main className="min-h-screen bg-white">
-      <header className="relative overflow-hidden border-b border-[var(--border)]">
+      <header className="relative overflow-hidden border-b border-border">
         {/* Static, very light gradient — no animation */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[var(--fresh-sky)]/[0.04] via-white to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-fresh-sky/[0.04] via-white to-transparent"
         />
 
         <div className="relative mx-auto flex max-w-5xl flex-col items-center px-4 pb-5 pt-5 sm:px-6 md:pb-6 md:pt-10 xl:px-20">
           <motion.p
             {...fade(0)}
-            className="text-sm font-semibold uppercase tracking-[0.3em] text-[var(--cerulean)]"
+            className="text-sm font-semibold uppercase tracking-[0.3em] text-cerulean"
           >
             Wedding Registry
           </motion.p>
 
           <motion.h1
             {...fade(1)}
-            className="mt-2 text-center font-[family-name:var(--font-display)] text-[clamp(2.45rem,11vw,4rem)] italic leading-[0.98] tracking-[-0.01em] text-[var(--ink-black)]"
+            className="mt-2 text-center font-[family-name:var(--font-display)] text-[clamp(2.45rem,11vw,4rem)] italic leading-[0.98] tracking-[-0.01em] text-ink-black"
           >
             Taylor &amp; Mitch
           </motion.h1>
@@ -66,7 +64,7 @@ export function HomePageShell({
               transition: { duration: 0.4, delay: stagger(2), ease },
             })}
             style={{ transformOrigin: "top" }}
-            className="mt-4 h-6 w-px bg-gradient-to-b from-[var(--cerulean)]/20 to-[var(--fresh-sky)]/40 md:mt-5 md:h-7"
+            className="mt-4 h-6 w-px bg-gradient-to-b from-cerulean/20 to-fresh-sky/40 md:mt-5 md:h-7"
           />
 
           {/* Hero photo — static, no float */}
@@ -80,7 +78,7 @@ export function HomePageShell({
           >
             <div
               aria-hidden="true"
-              className="absolute -inset-1 border border-[var(--cerulean)]/15 sm:-inset-1.5 md:-inset-3"
+              className="absolute -inset-1 border border-cerulean/15 sm:-inset-1.5 md:-inset-3"
             />
             <div className="relative h-[260px] w-[200px] overflow-hidden shadow-[0_8px_32px_rgba(0,23,31,0.12),0_2px_8px_rgba(0,52,89,0.08)] sm:h-[300px] sm:w-[226px] md:h-[400px] md:w-[300px]">
               <Image
@@ -96,7 +94,7 @@ export function HomePageShell({
 
           <motion.p
             {...fade(4)}
-            className="mt-4 text-center text-xs font-medium uppercase tracking-[0.24em] text-[var(--ink-black)]/50 sm:mt-5 sm:text-sm sm:tracking-[0.2em]"
+            className="mt-4 text-center text-xs font-medium uppercase tracking-[0.24em] text-ink-black/50 sm:mt-5 sm:text-sm sm:tracking-[0.2em]"
           >
             Taylor &amp; Mitch, 2026
           </motion.p>
@@ -108,26 +106,26 @@ export function HomePageShell({
               transition: { duration: 0.4, delay: stagger(5), ease },
             })}
             style={{ transformOrigin: "top" }}
-            className="mt-3 h-6 w-px bg-gradient-to-b from-[var(--fresh-sky)]/40 to-[var(--cerulean)]/20 md:mt-4 md:h-7"
+            className="mt-3 h-6 w-px bg-gradient-to-b from-fresh-sky/40 to-cerulean/20 md:mt-4 md:h-7"
           />
 
           <motion.div
             {...fade(6)}
             className="mt-3 text-center md:mt-4"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--cerulean)] sm:text-sm sm:tracking-[0.25em]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cerulean sm:text-sm sm:tracking-[0.25em]">
               Wedding Shower
             </p>
-            <p className="mt-1 font-[family-name:var(--font-display)] text-[1.4rem] text-[var(--ink-black)] sm:text-[1.6rem] md:text-[1.85rem]">
+            <p className="mt-1 font-[family-name:var(--font-display)] text-[1.4rem] text-ink-black sm:text-[1.6rem] md:text-[1.85rem]">
               May 3, 2026
             </p>
-            <p className="mt-1 text-sm leading-relaxed text-[var(--ink-black)]/70 sm:text-lg">
+            <p className="mt-1 text-sm leading-relaxed text-ink-black/70 sm:text-lg">
               1-3 pm ·{" "}
               <a
                 href="https://www.google.com/maps/search/?api=1&query=Red+River+Community+Centre"
                 target="_blank"
                 rel="noreferrer"
-                className="underline decoration-[var(--cerulean)]/35 underline-offset-4 transition hover:text-[var(--ink-black)] hover:decoration-[var(--cerulean)]"
+                className="underline decoration-cerulean/35 underline-offset-4 transition hover:text-ink-black hover:decoration-cerulean"
               >
                 Red River Community Centre
               </a>
@@ -136,7 +134,7 @@ export function HomePageShell({
 
           <motion.p
             {...fade(7)}
-            className="mt-4 max-w-md px-2 text-center text-base leading-relaxed text-[var(--ink-black)]/60 sm:px-0 sm:text-lg"
+            className="mt-4 max-w-md px-2 text-center text-base leading-relaxed text-ink-black/60 sm:px-0 sm:text-lg"
           >
             Browse the list, buy from the store, then mark what you&apos;re covering so everyone stays in the loop.
           </motion.p>
@@ -153,20 +151,20 @@ export function HomePageShell({
           animate: { opacity: 1 },
           transition: { duration: 0.3, delay: stagger(9), ease },
         })}
-        className="sticky top-0 z-40 hidden border-b border-[var(--border)] bg-white/94 px-6 py-3 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md sm:block md:px-12 xl:px-20"
+        className="sticky top-0 z-40 hidden border-b border-border bg-white/94 px-6 py-3 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md sm:block md:px-12 xl:px-20"
       >
-        <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto pb-0.5 text-xs font-medium text-[var(--ink-black)]/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 sm:overflow-visible sm:pb-0 sm:text-sm">
-          <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
-            <Gift size={16} className="text-[var(--cerulean)]" />
+        <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto pb-0.5 text-xs font-medium text-ink-black/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 sm:overflow-visible sm:pb-0 sm:text-sm">
+          <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-border/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+            <Gift size={16} className="text-cerulean" />
             <span>{items.length} {items.length === 1 ? "Item" : "Items"}</span>
           </div>
-          <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
-            <CircleCheck size={16} className="text-[var(--fresh-sky)]" />
+          <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-border/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+            <CircleCheck size={16} className="text-fresh-sky" />
             <span>{availableCount} Available</span>
           </div>
           {requestedCount > 0 ? (
-            <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
-              <Heart size={16} className="fill-[var(--deep-space-blue)] text-[var(--deep-space-blue)]" />
+            <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-border/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+              <Heart size={16} className="fill-deep-space-blue text-deep-space-blue" />
               <span>{requestedCount} Claimed</span>
             </div>
           ) : null}
@@ -181,14 +179,13 @@ export function HomePageShell({
         transition={{ duration: 0.35, ease }}
         className="mx-auto max-w-5xl px-4 pb-8 pt-2 sm:px-6 md:px-12 md:py-12 xl:px-20"
       >
-        {!envReady ? <EnvAlert /> : null}
-
         {items.length ? (
           <RegistryBrowser items={items} />
         ) : (
-          <div className="rounded-lg border border-dashed border-[rgba(0,52,89,0.1)] bg-white p-16 text-center text-base text-muted-foreground">
-            Add your first item from the admin screen once Supabase is configured.
-          </div>
+          <EmptyState
+            title="Registry items will appear here soon."
+            description="Check back shortly for the full list."
+          />
         )}
       </motion.section>
 

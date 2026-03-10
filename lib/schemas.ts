@@ -34,5 +34,10 @@ export const refreshPriceSchema = z.object({
   itemId: z.string().uuid(),
 });
 
+export const adminReservationAdjustmentSchema = z.object({
+  itemId: z.string().uuid(),
+  direction: z.enum(["increment", "decrement"]),
+});
+
 export type ReservationInput = z.infer<typeof reservationSchema>;
 export type RegistryItemInput = z.infer<typeof registryItemSchema>;

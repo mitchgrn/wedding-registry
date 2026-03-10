@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState, useTransition, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import Image from "next/image";
-import { ChevronDown, Gift, LoaderCircle, RefreshCcw, RotateCcw, Trash2, WandSparkles } from "lucide-react";
+import { ChevronDown, Gift, LoaderCircle, Minus, Plus, RefreshCcw, RotateCcw, Trash2, WandSparkles } from "lucide-react";
 import { toast } from "sonner";
 import {
+  adjustItemReservationsAction,
   autofillRegistryItemAction,
   clearItemReservationsAction,
   createRegistryItemAction,
@@ -53,13 +54,21 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
   const [isToolbarPending, startToolbarTransition] = useTransition();
   const [expanded, setExpanded] = useState(!item);
   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
+  const [purchaseControlsOpen, setPurchaseControlsOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [draft, setDraft] = useState(() => createDraft(item));
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [confirmAction, setConfirmAction] = useState<null | { title: string; description: string; onConfirm: () => void }>(null);
+  const [confirmAction, setConfirmAction] = useState<null | {
+    title: string;
+    description: string;
+    actionLabel?: string;
+    onConfirm: () => void;
+  }>(null);
   const previousItemId = useRef(item?.id);
   const previousUpdatedAt = useRef(item?.updated_at);
   const previousStateMessage = useRef<string | undefined>(undefined);
   const previousToolbarMessage = useRef<string | null>(null);
+  const confirmClearTimeoutRef = useRef<number | null>(null);
 
   const titleId = `title-${item?.id ?? "new"}`;
   const purchaseId = `purchase-${item?.id ?? "new"}`;
@@ -78,6 +87,7 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
     previousUpdatedAt.current = item?.updated_at;
     setDraft(createDraft(item));
     setFieldErrors({});
+    setPurchaseControlsOpen(false);
   }, [item]);
 
   useEffect(() => {
@@ -157,6 +167,32 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
     toast.success(toolbarMessage);
   }, [toolbarMessage]);
 
+  useEffect(() => {
+    if (confirmOpen) {
+      if (confirmClearTimeoutRef.current) {
+        window.clearTimeout(confirmClearTimeoutRef.current);
+        confirmClearTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    if (!confirmAction) {
+      return;
+    }
+
+    confirmClearTimeoutRef.current = window.setTimeout(() => {
+      setConfirmAction(null);
+      confirmClearTimeoutRef.current = null;
+    }, 200);
+
+    return () => {
+      if (confirmClearTimeoutRef.current) {
+        window.clearTimeout(confirmClearTimeoutRef.current);
+        confirmClearTimeoutRef.current = null;
+      }
+    };
+  }, [confirmAction, confirmOpen]);
+
   const displayPrice =
     item?.display_price ??
     formatCurrency(item?.manual_price ?? null, item?.price_currency ?? "USD") ??
@@ -180,7 +216,7 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
 
   // ─── Confirm dialog ──────────────────────────────────────────────────────────
   const confirmDialog = (
-    <AlertDialog open={Boolean(confirmAction)} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
+    <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{confirmAction?.title}</AlertDialogTitle>
@@ -189,13 +225,12 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className="bg-red-600 text-white hover:bg-red-700"
             onClick={() => {
               confirmAction?.onConfirm();
-              setConfirmAction(null);
+              setConfirmOpen(false);
             }}
           >
-            Confirm
+            {confirmAction?.actionLabel ?? "Confirm"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -210,87 +245,195 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
 
         <div className="overflow-hidden rounded-xl border border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.38))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
           {/* Action toolbar */}
-          <div className="border-b border-[var(--border)] bg-white/50 px-3 py-2 sm:px-4">
-            <div className="flex items-center justify-end gap-1.5 sm:gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={isToolbarPending}
-                className="h-9 px-2 text-[var(--ink-black)]/65 hover:bg-white hover:text-[var(--deep-space-blue)] sm:px-3"
-                onClick={() =>
-                  startToolbarTransition(async () => {
-                    const result = await refreshPriceAction(item.id);
-                    setToolbarMessage(result.message ?? null);
-                  })
-                }
-              >
-                {isToolbarPending ? (
-                  <LoaderCircle className="size-3.5 animate-spin" />
-                ) : (
-                  <RefreshCcw className="size-3.5" />
-                )}
-                <span>Refresh</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isToolbarPending || item.reserved_quantity < 1}
-                className="h-9 border-[var(--border)] bg-white/80 px-2 hover:bg-white sm:px-3"
-                onClick={() =>
-                  setConfirmAction({
-                    title: "Reset purchases?",
-                    description: `This will remove all reservations for "${item.title}".`,
-                    onConfirm: () =>
-                      startToolbarTransition(async () => {
-                        const result = await clearItemReservationsAction(item.id);
-                        setToolbarMessage(result.message ?? null);
-                        if (result.status === "success") router.refresh();
-                      }),
-                  })
-                }
-              >
-                <RotateCcw className="size-3.5" />
-                <span>Reset</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isToolbarPending}
-                className="h-9 border-[var(--border)] bg-white/80 px-2 hover:bg-white sm:px-3"
-                onClick={() =>
-                  startToolbarTransition(async () => {
-                    const result = await toggleItemActiveAction(item.id, !item.is_active);
-                    setToolbarMessage(result.message ?? null);
-                  })
-                }
-              >
-                {item.is_active ? "Archive" : "Restore"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isToolbarPending}
-                className="h-9 border-red-200 bg-white/80 px-2 text-red-700 hover:bg-red-50 hover:text-red-800 sm:px-3"
-                onClick={() =>
-                  setConfirmAction({
-                    title: "Delete item?",
-                    description: `"${item.title}" and all its reservations will be permanently removed.`,
-                    onConfirm: () =>
-                      startToolbarTransition(async () => {
-                        const result = await deleteRegistryItemAction(item.id);
-                        setToolbarMessage(result.message ?? null);
-                        if (result.status === "success") router.refresh();
-                      }),
-                  })
-                }
-              >
-                <Trash2 className="size-3.5" />
-                <span>Delete</span>
-              </Button>
+          <div className="border-b border-border bg-white/50 px-3 py-2 sm:px-4">
+            <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-1 flex-col gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-auto min-h-11 justify-between border-border bg-white/90 px-3 py-2 hover:bg-white"
+                  aria-expanded={purchaseControlsOpen}
+                  aria-label={`Toggle purchase count controls for ${item.title}`}
+                  onClick={() => setPurchaseControlsOpen((open) => !open)}
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex min-w-0 flex-col items-start">
+                      <span className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-cerulean">
+                        Purchase count
+                      </span>
+                      <span className="text-[0.72rem] text-ink-black/55 sm:hidden">
+                        {item.remaining_quantity} left to reserve
+                      </span>
+                    </span>
+                    <span className="rounded-full bg-soft-blue px-2.5 py-1 text-sm font-semibold text-deep-space-blue">
+                      {item.reserved_quantity}/{item.desired_quantity}
+                    </span>
+                  </span>
+                  <ChevronDown
+                    className={`size-4 shrink-0 text-cerulean transition-transform ${purchaseControlsOpen ? "rotate-180" : ""}`}
+                  />
+                </Button>
+
+                {purchaseControlsOpen ? (
+                  <div className="flex flex-col gap-3 rounded-xl border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(234,245,251,0.72))] px-3 py-3 shadow-[0_8px_24px_rgba(0,23,31,0.06)]">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-lg border border-border/80 bg-white/90 px-3 py-2">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-cerulean">
+                          Reserved
+                        </p>
+                        <p className="mt-1 text-lg font-semibold text-deep-space-blue">
+                          {item.reserved_quantity}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-border/80 bg-white/90 px-3 py-2">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-cerulean">
+                          Remaining
+                        </p>
+                        <p className="mt-1 text-lg font-semibold text-deep-space-blue">
+                          {item.remaining_quantity}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex min-w-0 flex-1 items-center rounded-xl border border-border bg-white shadow-sm">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={isToolbarPending || item.reserved_quantity < 1}
+                          className="h-11 flex-1 rounded-r-none px-2 text-ink-black/70 hover:bg-soft-blue hover:text-deep-space-blue"
+                          aria-label={`Decrease purchased count for ${item.title}`}
+                          onClick={() =>
+                            startToolbarTransition(async () => {
+                              const result = await adjustItemReservationsAction(item.id, "decrement");
+                              setToolbarMessage(result.message ?? null);
+                              if (result.status === "success") router.refresh();
+                            })
+                          }
+                        >
+                          {isToolbarPending ? <LoaderCircle className="size-3.5 animate-spin" /> : <Minus className="size-3.5" />}
+                        </Button>
+                        <div className="flex min-w-[4.5rem] flex-col items-center border-x border-border/80 px-2 py-1">
+                          <span className="text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-cerulean">
+                            Count
+                          </span>
+                          <span className="text-base font-semibold text-deep-space-blue">
+                            {item.reserved_quantity}
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={isToolbarPending || item.remaining_quantity < 1}
+                          className="h-11 flex-1 rounded-l-none px-2 text-ink-black/70 hover:bg-soft-blue hover:text-deep-space-blue"
+                          aria-label={`Increase purchased count for ${item.title}`}
+                          onClick={() =>
+                            startToolbarTransition(async () => {
+                              const result = await adjustItemReservationsAction(item.id, "increment");
+                              setToolbarMessage(result.message ?? null);
+                              if (result.status === "success") router.refresh();
+                            })
+                          }
+                        >
+                          {isToolbarPending ? <LoaderCircle className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
+                        </Button>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={isToolbarPending || item.reserved_quantity < 1}
+                      className="h-10 shrink-0 border-border bg-white/85 px-3 text-xs hover:bg-white sm:w-auto"
+                      onClick={() =>
+                        (() => {
+                          setConfirmAction({
+                            title: "Clear all purchases?",
+                            description: `This will set the purchase count for "${item.title}" back to 0.`,
+                            actionLabel: "Clear purchases",
+                            onConfirm: () =>
+                              startToolbarTransition(async () => {
+                                const result = await clearItemReservationsAction(item.id);
+                                setToolbarMessage(result.message ?? null);
+                                if (result.status === "success") router.refresh();
+                              }),
+                          });
+                          setConfirmOpen(true);
+                        })()
+                      }
+                    >
+                      <RotateCcw className="size-3.5" />
+                      <span>Reset count</span>
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={isToolbarPending}
+                  className="h-9 px-2 text-ink-black/65 hover:bg-white hover:text-deep-space-blue sm:px-3"
+                  onClick={() =>
+                    startToolbarTransition(async () => {
+                      const result = await refreshPriceAction(item.id);
+                      setToolbarMessage(result.message ?? null);
+                    })
+                  }
+                >
+                  {isToolbarPending ? (
+                    <LoaderCircle className="size-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCcw className="size-3.5" />
+                  )}
+                  <span>Resync</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isToolbarPending}
+                  className="h-9 border-border bg-white/80 px-2 hover:bg-white sm:px-3"
+                  onClick={() =>
+                    startToolbarTransition(async () => {
+                      const result = await toggleItemActiveAction(item.id, !item.is_active);
+                      setToolbarMessage(result.message ?? null);
+                    })
+                  }
+                >
+                  {item.is_active ? "Archive" : "Restore"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isToolbarPending}
+                  className="h-9 border-red-200 bg-white/80 px-2 text-red-700 hover:bg-red-50 hover:text-red-800 sm:px-3"
+                  onClick={() =>
+                    (() => {
+                      setConfirmAction({
+                        title: "Delete item?",
+                        description: `"${item.title}" and all its reservations will be permanently removed.`,
+                        actionLabel: "Delete item",
+                        onConfirm: () =>
+                          startToolbarTransition(async () => {
+                            const result = await deleteRegistryItemAction(item.id);
+                            setToolbarMessage(result.message ?? null);
+                            if (result.status === "success") router.refresh();
+                          }),
+                      });
+                      setConfirmOpen(true);
+                    })()
+                  }
+                >
+                  <Trash2 className="size-3.5" />
+                  <span>Delete</span>
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -305,10 +448,10 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
                 setExpanded((v) => !v);
               }
             }}
-            className="flex w-full items-center gap-3 px-3 py-3 text-left transition hover:bg-[var(--soft-blue)]/45 sm:gap-4 sm:px-4"
+            className="flex w-full items-center gap-3 px-3 py-3 text-left transition hover:bg-soft-blue/45 sm:gap-4 sm:px-4"
           >
             {/* Thumbnail */}
-            <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-[var(--soft-blue)] sm:size-16">
+            <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-soft-blue sm:size-16">
               {item.image_url ? (
                 <Image
                   src={item.image_url}
@@ -326,7 +469,7 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
 
             {/* Title + meta */}
             <div className="min-w-0 flex-1">
-              <p className="line-clamp-1 text-sm font-medium text-[var(--ink-black)]">{item.title}</p>
+              <p className="line-clamp-1 text-sm font-medium text-ink-black">{item.title}</p>
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {displayPrice ? <Badge>{displayPrice}</Badge> : null}
                 <Badge>{item.reserved_quantity}/{item.desired_quantity} reserved</Badge>
@@ -337,14 +480,14 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
 
             {/* Chevron */}
             <ChevronDown
-              className={`size-4 shrink-0 text-[var(--cerulean)] transition-transform duration-200 xl:${expanded ? "rotate-180" : ""}`}
+              className={`size-4 shrink-0 text-cerulean transition-transform duration-200 xl:${expanded ? "rotate-180" : ""}`}
             />
           </button>
 
           {/* Expandable edit form — desktop only (xl+) */}
           {expanded && (
-            <div className="hidden border-t border-[var(--border)] xl:block">
-              <div className="bg-[var(--soft-blue)]/35 px-4 py-2 text-sm font-medium text-[var(--deep-space-blue)]">
+            <div className="hidden border-t border-border xl:block">
+              <div className="bg-soft-blue/35 px-4 py-2 text-sm font-medium text-deep-space-blue">
                 Edit item
               </div>
               {formFields}
@@ -353,9 +496,9 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
         </div>
 
         {/* Edit drawer — mobile/tablet */}
-        <Drawer open={editDrawerOpen} onOpenChange={setEditDrawerOpen}>
+        <Drawer open={editDrawerOpen} onOpenChange={setEditDrawerOpen} shouldScaleBackground={false}>
           <DrawerContent className="flex max-h-[92dvh] flex-col overflow-hidden xl:hidden">
-            <DrawerHeader className="border-b border-[var(--border)]">
+            <DrawerHeader className="border-b border-border">
               <DrawerTitle>Edit item</DrawerTitle>
               <DrawerDescription className="line-clamp-1">{item.title}</DrawerDescription>
             </DrawerHeader>
@@ -375,8 +518,8 @@ export function AdminItemForm({ item, onSuccess, bare }: { item?: RegistryItemWi
 
   return (
     <div className="overflow-hidden rounded-xl border border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.38))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
-      <CardHeader className="border-b border-[var(--border)] bg-white/55 px-4 py-4">
-        <CardTitle className="text-base font-medium text-[var(--deep-space-blue)]">New item</CardTitle>
+      <CardHeader className="border-b border-border bg-white/55 px-4 py-4">
+        <CardTitle className="text-base font-medium text-deep-space-blue">New item</CardTitle>
         <CardDescription>Paste a store link, then autofill the rest.</CardDescription>
       </CardHeader>
       {formFields}
@@ -485,7 +628,7 @@ function FormFields({
                 type="button"
                 variant="secondary"
                 disabled={isToolbarPending}
-                className="h-10 w-full border-[var(--border)] bg-[var(--soft-blue)] px-4 text-[var(--deep-space-blue)] hover:bg-[var(--soft-blue)]/70"
+                className="h-10 w-full border-border bg-soft-blue px-4 text-deep-space-blue hover:bg-soft-blue/70"
                 onClick={() =>
                   startToolbarTransition(async () => {
                     const result = await autofillRegistryItemAction(draft.purchaseUrl);
@@ -494,11 +637,12 @@ function FormFields({
                       setDraft((current) => ({
                         ...current,
                         purchaseUrl: result.resolvedUrl ?? current.purchaseUrl,
-                        title: current.title.trim() ? current.title : (result.title ?? current.title),
-                        imageUrl: current.imageUrl.trim() ? current.imageUrl : (result.imageUrl ?? current.imageUrl),
-                        notes: current.notes.trim() ? current.notes : (result.notes ?? current.notes),
-                        manualPrice:
-                          current.manualPrice.trim() ? current.manualPrice : formatNumberInput(result.manualPrice),
+                        title: result.title ?? current.title,
+                        imageUrl: result.imageUrl ?? current.imageUrl,
+                        notes: result.notes ?? current.notes,
+                        manualPrice: result.manualPrice === null || result.manualPrice === undefined
+                          ? current.manualPrice
+                          : formatNumberInput(result.manualPrice),
                       }));
                     }
                   })
@@ -547,7 +691,7 @@ function FormFields({
           </div>
         </section>
 
-        <section className="space-y-3 border-t border-[var(--border)]/70 pt-4">
+        <section className="space-y-3 border-t border-border/70 pt-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor={manualId}>Price</Label>
@@ -588,14 +732,14 @@ function FormFields({
               onChange={(event) => updateField("notes", event.target.value)}
             />
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs text-[var(--ink-black)]/45">{draft.notes.length}/400</p>
+              <p className="text-xs text-ink-black/45">{draft.notes.length}/400</p>
               {fieldErrors.notes ? <p className="text-xs text-red-700">{fieldErrors.notes}</p> : null}
             </div>
           </div>
         </section>
 
-        <section className="flex flex-col gap-3 border-t border-[var(--border)]/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="rounded-lg border border-[var(--border)] bg-white/80 px-3 py-2.5">
+        <section className="flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="rounded-lg border border-border bg-white/80 px-3 py-2.5">
             <div className="flex items-center gap-3">
               <Checkbox
                 id={activeId}
@@ -608,7 +752,7 @@ function FormFields({
               </Label>
             </div>
           </div>
-          <Button type="submit" disabled={pending} className="h-11 w-full bg-[var(--deep-space-blue)] text-white hover:bg-[#00456f] sm:h-10 sm:w-auto">
+          <Button type="submit" disabled={pending} className="h-11 w-full bg-deep-space-blue text-white hover:bg-[#00456f] sm:h-10 sm:w-auto">
             {pending ? <LoaderCircle className="size-4 animate-spin" /> : null}
             {item ? "Save changes" : "Add item"}
           </Button>
@@ -652,7 +796,7 @@ function getFieldClassName(hasError?: string, isTextarea = false) {
   const base = isTextarea ? "min-h-24 text-base sm:text-sm" : "h-11 text-base sm:h-9 sm:text-sm";
   const tone = hasError
     ? "border-red-300 bg-red-50/70 focus:border-red-400 focus:ring-red-100"
-    : "border-[var(--border)] bg-white/85 focus:border-[var(--cerulean)]/35 focus:ring-[var(--fresh-sky)]/15";
+    : "border-border bg-white/85 focus:border-cerulean/35 focus:ring-fresh-sky/15";
   return `${base} ${tone}`;
 }
 

@@ -19,7 +19,7 @@ export function AdminAddSheet() {
     <>
       <Button
         type="button"
-        className="h-10 shrink-0 rounded-xl bg-[var(--deep-space-blue)] px-4 text-white hover:bg-[#00456f] xl:hidden"
+        className="h-10 shrink-0 rounded-xl bg-deep-space-blue px-4 text-white hover:bg-[#00456f] xl:hidden"
         onClick={() => setOpen(true)}
       >
         <Plus className="size-4" />

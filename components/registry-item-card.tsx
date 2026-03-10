@@ -1,13 +1,31 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Image from "next/image";
-import { CheckCircle2, ExternalLink, Gift, Tag } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { useEffect, useState } from "react";
+import { CheckCircle2, ExternalLink, Gift, Sparkles, Tag } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ReservationForm } from "@/components/reservation-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  celebrationExitMs,
+  celebrationVisibleMs,
+  clearReservationCelebration,
+  confettiPieces,
+  hasRecentReservationCelebration,
+} from "@/lib/reservation-celebration";
 import { formatCurrency, getStoreLabel } from "@/lib/utils";
 import type { RegistryItemWithStats } from "@/lib/types";
+
+type ConfettiStyle = CSSProperties & {
+  "--confetti-left": string;
+  "--confetti-drift": string;
+  "--confetti-rotate": string;
+  "--confetti-delay": string;
+  "--confetti-duration": string;
+  "--confetti-color": string;
+};
 
 export function RegistryItemCard({
   item,
@@ -29,6 +47,43 @@ export function RegistryItemCard({
 
   const fullyReserved = item.remaining_quantity <= 0;
   const storeLabel = getStoreLabel(item.purchase_url);
+  const [celebrationCount, setCelebrationCount] = useState(0);
+  const [celebrationPhase, setCelebrationPhase] = useState<"idle" | "visible" | "exiting">("idle");
+  const showRecentCelebration = celebrationPhase !== "idle";
+
+  useEffect(() => {
+    if (!fullyReserved || !hasRecentReservationCelebration(item.id)) {
+      return;
+    }
+
+    setCelebrationPhase("visible");
+    setCelebrationCount((count) => count + 1);
+  }, [fullyReserved, item.id]);
+
+  useEffect(() => {
+    if (celebrationPhase !== "visible") {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setCelebrationPhase("exiting");
+    }, celebrationVisibleMs);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [celebrationCount, celebrationPhase]);
+
+  useEffect(() => {
+    if (celebrationPhase !== "exiting") {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      clearReservationCelebration(item.id);
+      setCelebrationPhase("idle");
+    }, celebrationExitMs);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [celebrationPhase, item.id]);
 
   return (
     <motion.article
@@ -106,7 +161,27 @@ export function RegistryItemCard({
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-4 md:p-5">
+      <div className="relative flex flex-1 flex-col p-4 md:p-5" data-celebrate={showRecentCelebration}>
+        {showRecentCelebration ? (
+          <div key={celebrationCount} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+            {confettiPieces.map((piece, index) => (
+              <span
+                key={`${item.id}-card-confetti-${index}`}
+                className="confetti-piece"
+                style={
+                  {
+                    "--confetti-left": piece.left,
+                    "--confetti-drift": piece.drift,
+                    "--confetti-rotate": piece.rotate,
+                    "--confetti-delay": piece.delay,
+                    "--confetti-duration": piece.duration,
+                    "--confetti-color": piece.color,
+                  } as ConfettiStyle
+                }
+              />
+            ))}
+          </div>
+        ) : null}
         <p
           className={[
             "text-xs font-semibold tracking-[0.08em] [font-variant-caps:all-small-caps]",
@@ -163,9 +238,36 @@ export function RegistryItemCard({
           </div>
         </div>
 
+        <AnimatePresence initial={false}>
+          {showRecentCelebration ? (
+            <motion.div
+              key={`card-success-${celebrationCount}`}
+              initial={prefersReducedMotion ? { opacity: 0, height: 0 } : { opacity: 0, height: 0, y: -12 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={prefersReducedMotion ? { opacity: 0, height: 0 } : { opacity: 0, height: 0, y: -10 }}
+              transition={{
+                opacity: { duration: 0.24, ease: [0.2, 0, 0, 1] },
+                height: { duration: 0.34, ease: [0.2, 0, 0, 1] },
+                y: { duration: 0.34, ease: [0.2, 0, 0, 1] },
+              }}
+              className="mt-3 overflow-hidden"
+            >
+              <div className="rounded-md border border-cerulean/10 bg-white/78 px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.88)]">
+                <p className="flex items-center gap-2 font-semibold text-deep-space-blue">
+                  <Sparkles className="size-3.5 text-cerulean" />
+                  Thank you for celebrating with us.
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-deep-space-blue/68">
+                  We&apos;ve marked your gift so everyone stays in sync.
+                </p>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
         {fullyReserved ? (
           <div className="mt-3 rounded-md border border-emerald-700/15 bg-emerald-600 px-3.5 py-2.5 text-sm font-medium text-white">
-            This gift has already been claimed.
+            {showRecentCelebration ? "Your gift has been marked as claimed." : "This gift has already been claimed."}
           </div>
         ) : null}
 

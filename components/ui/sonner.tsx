@@ -12,7 +12,7 @@ export function Toaster(props: ToasterProps) {
       toastOptions={{
         classNames: {
           closeButton:
-            "!border-[var(--border)] !bg-white !text-[var(--ink-black)]/65 hover:!bg-[var(--soft-blue)] hover:!text-[var(--ink-black)]",
+            "!border-border !bg-white !text-ink-black/65 hover:!bg-soft-blue hover:!text-ink-black",
         },
         style: {
           background: "rgba(255,255,255,0.98)",

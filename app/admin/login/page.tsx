@@ -29,8 +29,8 @@ export default async function AdminLoginPage({
       />
 
       <Card className="relative w-full max-w-md overflow-hidden rounded-[1.5rem] border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,250,253,0.9))] shadow-[0_28px_90px_rgba(0,23,31,0.12)] sm:rounded-[2rem]">
-        <CardHeader className="border-b border-[var(--border)]/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0.68))] pb-6 pt-6 sm:pb-7 sm:pt-7">
-          <CardTitle className="font-[family-name:var(--font-display)] text-[2.2rem] italic leading-none text-[var(--ink-black)] sm:text-5xl">
+        <CardHeader className="border-b border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0.68))] pb-6 pt-6 sm:pb-7 sm:pt-7">
+          <CardTitle className="font-[family-name:var(--font-display)] text-[2.2rem] italic leading-none text-ink-black sm:text-5xl">
             Sign in
           </CardTitle>
         </CardHeader>
@@ -47,11 +47,11 @@ export default async function AdminLoginPage({
             </div>
           ) : null}
 
-          <div className="rounded-[1.25rem] border border-[var(--cerulean)]/10 bg-white/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:rounded-[1.4rem] sm:p-5">
+          <div className="rounded-[1.25rem] border border-cerulean/10 bg-white/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:rounded-[1.4rem] sm:p-5">
             {hasClientEnv() && serverEnv.success ? (
               <GoogleOneTap />
             ) : (
-              <p className="text-sm leading-6 text-[var(--ink-black)]/55">Add the required Supabase and Google environment variables before enabling admin login.</p>
+              <p className="text-sm leading-6 text-ink-black/55">Add the required Supabase and Google environment variables before enabling admin login.</p>
             )}
           </div>
 
@@ -59,17 +59,17 @@ export default async function AdminLoginPage({
             <form action={signOutAction}>
               <button
                 type="submit"
-                className="w-full text-sm text-[var(--ink-black)]/55 underline underline-offset-2 hover:text-[var(--cerulean)]"
+                className="w-full text-sm text-ink-black/55 underline underline-offset-2 hover:text-cerulean"
               >
                 Sign out {user.email ? `(${user.email})` : ""}
               </button>
             </form>
           ) : null}
 
-          <div className="border-t border-[var(--border)] pt-4">
+          <div className="border-t border-border pt-4">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm text-[var(--ink-black)]/55 transition hover:text-[var(--cerulean)]"
+              className="inline-flex items-center gap-2 text-sm text-ink-black/55 transition hover:text-cerulean"
             >
               <ArrowLeft className="size-4" />
               Back to registry
