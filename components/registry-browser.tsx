@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowUpDown, Check, Grid3X3, List, Search, SearchX, ShoppingBag } from "lucide-react";
-import { useDeferredValue, useState } from "react";
+import { ArrowUpDown, Check, Copy, Grid3X3, Info, List, Search, SearchX, ShoppingBag, X } from "lucide-react";
+import { useDeferredValue, useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { toast } from "sonner";
 import { RegistryItemCard } from "@/components/registry-item-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +23,7 @@ import { getStoreLabel } from "@/lib/utils";
 
 type SortKey = "title" | "price-asc" | "price-desc" | "unpurchased";
 type ViewMode = "list" | "grid";
+const shippingAddress = "Taylor Hrabarchuk\n5804 Rannock Avenue\nWinnipeg, MB R3R 2A4\nCANADA";
 
 function getSortablePrice(item: RegistryItemWithStats) {
   return item.manual_price ?? item.price_amount ?? Number.POSITIVE_INFINITY;
@@ -33,6 +35,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [hidePurchased, setHidePurchased] = useState(false);
   const [storeFilter, setStoreFilter] = useState("all");
+  const [filterInfoOpen, setFilterInfoOpen] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
@@ -81,8 +84,39 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
 
   const hasActiveFilters = Boolean(normalizedQuery) || storeFilter !== "all" || hidePurchased || sortBy !== "title";
 
+  useEffect(() => {
+    if (!filterInfoOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setFilterInfoOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [filterInfoOpen]);
+
+  async function handleCopyShippingAddress() {
+    try {
+      await navigator.clipboard.writeText(shippingAddress);
+      toast.success("Shipping address copied.");
+    } catch {
+      toast.error("Could not copy the shipping address.");
+    }
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <motion.div
         initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
         whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
@@ -90,8 +124,8 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
         transition={{ duration: 0.28, ease: [0.2, 0, 0, 1] }}
       >
         <Card className="rounded-[1.35rem] border-[var(--cerulean)]/10 bg-[linear-gradient(180deg,rgba(248,252,254,0.98),rgba(255,255,255,0.98))] shadow-[0_10px_30px_rgba(0,52,89,0.04)]">
-          <CardContent className="space-y-5 px-4 pb-4 pt-4 md:px-5">
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,0.9fr)_minmax(0,0.9fr)]">
+          <CardContent className="space-y-5 px-4 pb-4 pt-4 sm:px-5">
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,0.9fr)_minmax(0,0.9fr)]">
               <div className="space-y-2">
                 <Label htmlFor="registry-search" className="flex items-center gap-2 text-sm font-medium text-[var(--ink-black)]">
                   <Search className="size-4 text-[var(--cerulean)]" />
@@ -102,7 +136,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
                   <Input
                     id="registry-search"
                     aria-label="Search registry items"
-                    className="h-10 rounded-lg border-border bg-white pl-9"
+                    className="h-11 rounded-xl border-border bg-white pl-9 text-base sm:h-10 sm:text-sm"
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Search gifts, notes, price, or store"
                     value={query}
@@ -116,7 +150,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
                   Store
                 </Label>
                 <Select onValueChange={setStoreFilter} value={storeFilter}>
-                  <SelectTrigger id="registry-store-filter" aria-label="Filter registry items by store">
+                  <SelectTrigger id="registry-store-filter" aria-label="Filter registry items by store" className="h-11 rounded-xl text-base sm:h-10 sm:text-sm">
                     <SelectValue placeholder="All stores" />
                   </SelectTrigger>
                   <SelectContent>
@@ -136,7 +170,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
                   Sort
                 </Label>
                 <Select onValueChange={(value) => setSortBy(value as SortKey)} value={sortBy}>
-                  <SelectTrigger id="registry-sort" aria-label="Sort registry items">
+                  <SelectTrigger id="registry-sort" aria-label="Sort registry items" className="h-11 rounded-xl text-base sm:h-10 sm:text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -150,11 +184,11 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
             </div>
 
             <div className="flex flex-col gap-3 border-t border-border/80 pt-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <label
                   htmlFor="registry-hide-purchased"
                   className={[
-                    "group flex cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors sm:min-w-[18rem] sm:max-w-[24rem] sm:flex-1",
+                    "group flex w-full cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors lg:min-w-[18rem] lg:max-w-[24rem] lg:flex-1",
                     hidePurchased
                       ? "border-primary/30 bg-primary/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
                       : "border-border bg-[var(--soft-blue)]/70 hover:border-primary/20 hover:bg-[var(--soft-blue)]",
@@ -173,29 +207,41 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
                   </span>
                 </label>
 
-                <div className="inline-flex w-full rounded-lg border border-border bg-[var(--soft-blue)] p-1 sm:w-auto sm:shrink-0">
+                <div className="grid w-full gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:w-auto lg:grid-cols-none lg:auto-cols-max lg:grid-flow-col lg:items-center lg:justify-end">
                   <Button
                     type="button"
-                    size="sm"
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    className="h-9 flex-1 rounded-md px-4 text-sm sm:flex-none"
-                    onClick={() => setViewMode("list")}
-                    aria-pressed={viewMode === "list"}
+                    variant="outline"
+                    className="h-11 justify-center rounded-xl border-border bg-white/90 px-4 text-sm font-medium text-[var(--ink-black)] shadow-[0_6px_18px_rgba(0,52,89,0.06)] hover:bg-[var(--soft-blue)] sm:h-10"
+                    onClick={() => setFilterInfoOpen(true)}
                   >
-                    <List className="size-4" />
-                    List
+                    <Info className="size-4 text-[var(--cerulean)]" />
+                    Shipping info
                   </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={viewMode === "grid" ? "default" : "ghost"}
-                    className="h-9 flex-1 rounded-md px-4 text-sm sm:flex-none"
-                    onClick={() => setViewMode("grid")}
-                    aria-pressed={viewMode === "grid"}
-                  >
-                    <Grid3X3 className="size-4" />
-                    Grid
-                  </Button>
+
+                  <div className="inline-flex w-full rounded-lg border border-border bg-[var(--soft-blue)] p-1 lg:w-auto lg:shrink-0">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={viewMode === "list" ? "default" : "ghost"}
+                      className="h-10 flex-1 rounded-md px-4 text-sm lg:h-9 lg:flex-none"
+                      onClick={() => setViewMode("list")}
+                      aria-pressed={viewMode === "list"}
+                    >
+                      <List className="size-4" />
+                      List
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={viewMode === "grid" ? "default" : "ghost"}
+                      className="h-10 flex-1 rounded-md px-4 text-sm lg:h-9 lg:flex-none"
+                      onClick={() => setViewMode("grid")}
+                      aria-pressed={viewMode === "grid"}
+                    >
+                      <Grid3X3 className="size-4" />
+                      Grid
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -212,7 +258,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
             exit={prefersReducedMotion ? undefined : { opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
             className={[
-              viewMode === "grid" ? "grid gap-6 md:grid-cols-2 xl:grid-cols-3" : "space-y-5",
+              viewMode === "grid" ? "grid gap-4 sm:gap-6 md:grid-cols-2 2xl:grid-cols-3" : "space-y-4 sm:space-y-5",
             ].join(" ")}
           >
             {filteredItems.map((item) => (
@@ -250,6 +296,73 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
             />
           </motion.div>
         )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {filterInfoOpen ? (
+          <motion.div
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
+            animate={prefersReducedMotion ? undefined : { opacity: 1 }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.18, ease: [0.2, 0, 0, 1] }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,23,31,0.48)] px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-8"
+            onClick={() => setFilterInfoOpen(false)}
+          >
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="filter-info-title"
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 12, scale: 0.98 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0, y: 8, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+              className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-[1.4rem] border border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,251,253,0.98))] p-5 shadow-[0_24px_80px_rgba(0,23,31,0.22)] sm:max-h-none sm:rounded-[1.6rem] sm:p-6"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--cerulean)]">
+                    Shipping info
+                  </p>
+                  <h3 id="filter-info-title" className="font-[family-name:var(--font-display)] text-[1.65rem] leading-none text-[var(--ink-black)] sm:text-[1.9rem]">
+                    Shipping address
+                  </h3>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="size-9 rounded-full p-0 text-[var(--ink-black)]/65 hover:bg-[var(--soft-blue)]"
+                  onClick={() => setFilterInfoOpen(false)}
+                  aria-label="Close shipping info"
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
+
+              <div className="mt-5 rounded-[1.2rem] border border-[var(--cerulean)]/12 bg-white/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:p-5">
+                <address className="not-italic text-sm leading-7 text-[var(--ink-black)]/80 sm:text-base">
+                  Taylor Hrabarchuk
+                  <br />
+                  5804 Rannock Avenue
+                  <br />
+                  Winnipeg, MB R3R 2A4
+                  <br />
+                  CANADA
+                </address>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-4 h-10 w-full justify-center rounded-xl sm:w-auto"
+                  onClick={handleCopyShippingAddress}
+                >
+                  <Copy className="size-4" />
+                  Copy address
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
       </AnimatePresence>
     </div>
   );

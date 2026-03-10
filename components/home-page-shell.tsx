@@ -44,7 +44,7 @@ export function HomePageShell({
           className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[var(--fresh-sky)]/[0.04] via-white to-transparent"
         />
 
-        <div className="relative mx-auto flex max-w-5xl flex-col items-center px-6 pb-4 pt-6 md:pb-6 md:pt-10 xl:px-20">
+        <div className="relative mx-auto flex max-w-5xl flex-col items-center px-4 pb-5 pt-5 sm:px-6 md:pb-6 md:pt-10 xl:px-20">
           <motion.p
             {...fade(0)}
             className="text-sm font-semibold uppercase tracking-[0.3em] text-[var(--cerulean)]"
@@ -54,7 +54,7 @@ export function HomePageShell({
 
           <motion.h1
             {...fade(1)}
-            className="mt-2 text-center font-[family-name:var(--font-display)] text-[clamp(2.8rem,6vw,4rem)] italic leading-[1] tracking-[-0.01em] text-[var(--ink-black)]"
+            className="mt-2 text-center font-[family-name:var(--font-display)] text-[clamp(2.45rem,11vw,4rem)] italic leading-[0.98] tracking-[-0.01em] text-[var(--ink-black)]"
           >
             Taylor &amp; Mitch
           </motion.h1>
@@ -66,7 +66,7 @@ export function HomePageShell({
               transition: { duration: 0.4, delay: stagger(2), ease },
             })}
             style={{ transformOrigin: "top" }}
-            className="mt-5 h-7 w-px bg-gradient-to-b from-[var(--cerulean)]/20 to-[var(--fresh-sky)]/40"
+            className="mt-4 h-6 w-px bg-gradient-to-b from-[var(--cerulean)]/20 to-[var(--fresh-sky)]/40 md:mt-5 md:h-7"
           />
 
           {/* Hero photo — static, no float */}
@@ -76,27 +76,27 @@ export function HomePageShell({
               animate: { opacity: 1, scale: 1 },
               transition: { duration: 0.5, delay: stagger(3), ease },
             })}
-            className="relative mt-5"
+            className="relative mt-4 md:mt-5"
           >
             <div
               aria-hidden="true"
-              className="absolute -inset-1.5 border border-[var(--cerulean)]/15 md:-inset-3"
+              className="absolute -inset-1 border border-[var(--cerulean)]/15 sm:-inset-1.5 md:-inset-3"
             />
-            <div className="relative h-[300px] w-[226px] overflow-hidden shadow-[0_8px_32px_rgba(0,23,31,0.12),0_2px_8px_rgba(0,52,89,0.08)] md:h-[400px] md:w-[300px]">
+            <div className="relative h-[260px] w-[200px] overflow-hidden shadow-[0_8px_32px_rgba(0,23,31,0.12),0_2px_8px_rgba(0,52,89,0.08)] sm:h-[300px] sm:w-[226px] md:h-[400px] md:w-[300px]">
               <Image
                 src={heroPhoto}
                 alt="Taylor and Mitch"
                 fill
                 priority
                 className="object-cover object-[center_18%]"
-                sizes="(max-width: 768px) 226px, 300px"
+                sizes="(max-width: 640px) 200px, (max-width: 768px) 226px, 300px"
               />
             </div>
           </motion.div>
 
           <motion.p
             {...fade(4)}
-            className="mt-5 text-sm font-medium uppercase tracking-[0.2em] text-[var(--ink-black)]/50"
+            className="mt-4 text-center text-xs font-medium uppercase tracking-[0.24em] text-[var(--ink-black)]/50 sm:mt-5 sm:text-sm sm:tracking-[0.2em]"
           >
             Taylor &amp; Mitch, 2026
           </motion.p>
@@ -108,20 +108,20 @@ export function HomePageShell({
               transition: { duration: 0.4, delay: stagger(5), ease },
             })}
             style={{ transformOrigin: "top" }}
-            className="mt-4 h-7 w-px bg-gradient-to-b from-[var(--fresh-sky)]/40 to-[var(--cerulean)]/20"
+            className="mt-3 h-6 w-px bg-gradient-to-b from-[var(--fresh-sky)]/40 to-[var(--cerulean)]/20 md:mt-4 md:h-7"
           />
 
           <motion.div
             {...fade(6)}
-            className="mt-4 text-center"
+            className="mt-3 text-center md:mt-4"
           >
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--cerulean)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--cerulean)] sm:text-sm sm:tracking-[0.25em]">
               Wedding Shower
             </p>
-            <p className="mt-1 font-[family-name:var(--font-display)] text-[1.6rem] text-[var(--ink-black)] md:text-[1.85rem]">
+            <p className="mt-1 font-[family-name:var(--font-display)] text-[1.4rem] text-[var(--ink-black)] sm:text-[1.6rem] md:text-[1.85rem]">
               May 3, 2026
             </p>
-            <p className="mt-0.5 text-lg text-[var(--ink-black)]/70">
+            <p className="mt-1 text-sm leading-relaxed text-[var(--ink-black)]/70 sm:text-lg">
               1-3 pm ·{" "}
               <a
                 href="https://www.google.com/maps/search/?api=1&query=Red+River+Community+Centre"
@@ -136,7 +136,7 @@ export function HomePageShell({
 
           <motion.p
             {...fade(7)}
-            className="mt-4 max-w-md text-center text-lg leading-relaxed text-[var(--ink-black)]/60"
+            className="mt-4 max-w-md px-2 text-center text-base leading-relaxed text-[var(--ink-black)]/60 sm:px-0 sm:text-lg"
           >
             Browse the list, buy from the store, then mark what you&apos;re covering so everyone stays in the loop.
           </motion.p>
@@ -153,26 +153,22 @@ export function HomePageShell({
           animate: { opacity: 1 },
           transition: { duration: 0.3, delay: stagger(9), ease },
         })}
-        className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/94 px-6 py-3 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md md:px-12 xl:px-20"
+        className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/94 px-4 py-3 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md sm:px-6 md:px-12 xl:px-20"
       >
-        <div className="mx-auto flex max-w-5xl items-center justify-center gap-6 text-sm font-medium text-[var(--ink-black)]/70">
-          <div className="flex items-center gap-2">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-2 text-xs font-medium text-[var(--ink-black)]/70 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 sm:text-sm">
+          <div className="flex items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
             <Gift size={16} className="text-[var(--cerulean)]" />
             <span>{items.length} {items.length === 1 ? "Item" : "Items"}</span>
           </div>
-          <span className="h-4 w-px bg-[var(--border)]" />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
             <CircleCheck size={16} className="text-[var(--fresh-sky)]" />
             <span>{availableCount} Available</span>
           </div>
           {requestedCount > 0 ? (
-            <>
-              <span className="h-4 w-px bg-[var(--border)]" />
-              <div className="flex items-center gap-2">
+              <div className="col-span-2 flex items-center justify-center gap-2 rounded-full border border-[var(--border)]/80 bg-white/80 px-3 py-2 sm:col-auto sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
                 <Heart size={16} className="fill-[var(--deep-space-blue)] text-[var(--deep-space-blue)]" />
                 <span>{requestedCount} Claimed</span>
               </div>
-            </>
           ) : null}
         </div>
       </motion.div>
@@ -183,7 +179,7 @@ export function HomePageShell({
         whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.35, ease }}
-        className="mx-auto max-w-5xl px-6 py-10 md:px-12 md:py-12 xl:px-20"
+        className="mx-auto max-w-5xl px-4 py-8 sm:px-6 md:px-12 md:py-12 xl:px-20"
       >
         {!envReady ? <EnvAlert /> : null}
 
@@ -196,8 +192,8 @@ export function HomePageShell({
         )}
       </motion.section>
 
-      <footer className="border-t bg-white px-6 py-5">
-        <p className="text-center text-xs text-muted-foreground">
+      <footer className="border-t bg-white px-4 py-5 sm:px-6">
+        <p className="mx-auto max-w-3xl text-center text-xs leading-5 text-muted-foreground">
           Built by Mitch, who rage quit every other wedding registry site and decided to just make his own.
         </p>
       </footer>

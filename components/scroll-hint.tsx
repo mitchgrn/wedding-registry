@@ -15,26 +15,41 @@ export function ScrollHint() {
       return;
     }
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const nextVisible = entry.intersectionRatio < 0.28;
+    let frame = 0;
 
-        if (nextVisible !== visibleRef.current) {
-          visibleRef.current = nextVisible;
-          setVisible(nextVisible);
-        }
-      },
-      {
-        root: null,
-        threshold: [0, 0.12, 0.28, 0.45],
-        rootMargin: "0px 0px -8% 0px",
-      },
-    );
+    const updateVisibility = () => {
+      frame = 0;
 
-    observer.observe(target);
+      const viewportHeight = window.innerHeight;
+      const targetTop = target.getBoundingClientRect().top;
+      const hideThreshold = viewportHeight * 0.62;
+      const showThreshold = viewportHeight * 0.76;
+      const nextVisible = visibleRef.current ? targetTop > hideThreshold : targetTop > showThreshold;
+
+      if (nextVisible !== visibleRef.current) {
+        visibleRef.current = nextVisible;
+        setVisible(nextVisible);
+      }
+    };
+
+    const handleScroll = () => {
+      if (frame) {
+        return;
+      }
+
+      frame = window.requestAnimationFrame(updateVisibility);
+    };
+
+    updateVisibility();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
 
     return () => {
-      observer.disconnect();
+      if (frame) {
+        window.cancelAnimationFrame(frame);
+      }
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
     };
   }, []);
 

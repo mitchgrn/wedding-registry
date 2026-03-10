@@ -15,6 +15,7 @@ import {
   updateRegistryItemAction,
   type ActionState,
 } from "@/app/actions";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -144,14 +145,14 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
   if (item) {
     return (
       <div className="overflow-hidden rounded-xl border border-[rgba(0,52,89,0.1)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(234,245,251,0.38))] shadow-[0_16px_40px_rgba(0,23,31,0.05)]">
-        <div className="border-b border-[var(--border)] bg-white/50 px-4 py-2.5">
-          <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="border-b border-[var(--border)] bg-white/50 px-3 py-3 sm:px-4 sm:py-2.5">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
             <Button
               type="button"
               variant="ghost"
               size="sm"
               disabled={isToolbarPending}
-              className="text-[var(--ink-black)]/65 hover:bg-white hover:text-[var(--deep-space-blue)]"
+              className="h-10 justify-center text-[var(--ink-black)]/65 hover:bg-white hover:text-[var(--deep-space-blue)] sm:h-8"
               onClick={() =>
                 startToolbarTransition(async () => {
                   const result = await refreshPriceAction(item.id);
@@ -171,7 +172,7 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
               variant="outline"
               size="sm"
               disabled={isToolbarPending || item.reserved_quantity < 1}
-              className="border-[var(--border)] bg-white/80 hover:bg-white"
+              className="h-10 justify-center border-[var(--border)] bg-white/80 hover:bg-white sm:h-8"
               onClick={() => {
                 if (!window.confirm(`Reset all purchased quantity for "${item.title}"? This will remove its reservations.`)) {
                   return;
@@ -194,7 +195,7 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
               variant="outline"
               size="sm"
               disabled={isToolbarPending}
-              className="border-[var(--border)] bg-white/80 hover:bg-white"
+              className="h-10 justify-center border-[var(--border)] bg-white/80 hover:bg-white sm:h-8"
               onClick={() =>
                 startToolbarTransition(async () => {
                   const result = await toggleItemActiveAction(item.id, !item.is_active);
@@ -209,7 +210,7 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
               variant="outline"
               size="sm"
               disabled={isToolbarPending}
-              className="border-red-200 bg-white/80 text-red-700 hover:bg-red-50 hover:text-red-800"
+              className="col-span-2 h-10 justify-center border-red-200 bg-white/80 text-red-700 hover:bg-red-50 hover:text-red-800 sm:col-auto sm:h-8"
               onClick={() => {
                 if (!window.confirm(`Delete "${item.title}"? This will also remove any reservations for it.`)) {
                   return;
@@ -234,7 +235,7 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="flex w-full items-center gap-4 px-4 py-3 text-left transition hover:bg-[var(--soft-blue)]/45"
+          className="flex w-full items-start gap-3 px-3 py-3 text-left transition hover:bg-[var(--soft-blue)]/45 sm:items-center sm:gap-4 sm:px-4"
         >
           {/* Thumbnail */}
           <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-[var(--soft-blue)]">
@@ -255,19 +256,12 @@ export function AdminItemForm({ item }: { item?: RegistryItemWithStats }) {
 
           {/* Title + meta */}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-[var(--ink-black)]">{item.title}</p>
-            <div className="mt-0.5 flex items-center gap-3 text-[0.68rem] text-[var(--ink-black)]/52">
-              {displayPrice && <span>{displayPrice}</span>}
-              {displayPrice && <span className="h-2.5 w-px bg-[var(--border)]" />}
-              <span>
-                {item.reserved_quantity}/{item.desired_quantity} reserved
-              </span>
-              {!item.is_active && (
-                <>
-                  <span className="h-2.5 w-px bg-[var(--border)]" />
-                  <span className="text-warning">Archived</span>
-                </>
-              )}
+            <p className="line-clamp-2 text-sm font-medium text-[var(--ink-black)] sm:truncate">{item.title}</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {displayPrice ? <Badge>{displayPrice}</Badge> : null}
+              <Badge>{item.reserved_quantity}/{item.desired_quantity} reserved</Badge>
+              {!item.is_active ? <Badge tone="warning">Archived</Badge> : null}
+              {item.remaining_quantity === 0 ? <Badge tone="success">Complete</Badge> : null}
             </div>
           </div>
 
@@ -392,7 +386,7 @@ function FormFields({
 
   return (
     <form action={formAction} onSubmit={handleSubmit}>
-      <CardContent className="space-y-4 px-4 pb-4 pt-4">
+      <CardContent className="space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5">
         <section className="space-y-3">
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-1.5 md:col-span-2">
@@ -411,7 +405,7 @@ function FormFields({
 
             <div className="space-y-1.5 md:col-span-2">
               <Label htmlFor={purchaseId}>Purchase link</Label>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+              <div className="flex flex-col gap-2">
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <Input
                     id={purchaseId}
@@ -429,7 +423,7 @@ function FormFields({
                   type="button"
                   variant="secondary"
                   disabled={isToolbarPending}
-                  className="h-10 shrink-0 border-[var(--border)] bg-[var(--soft-blue)] px-4 text-[var(--deep-space-blue)] hover:bg-[var(--soft-blue)]/70 sm:self-auto"
+                  className="h-10 w-full shrink-0 border-[var(--border)] bg-[var(--soft-blue)] px-4 text-[var(--deep-space-blue)] hover:bg-[var(--soft-blue)]/70 sm:w-auto"
                   onClick={() =>
                     startToolbarTransition(async () => {
                       const result = await autofillRegistryItemAction(draft.purchaseUrl);
@@ -526,7 +520,7 @@ function FormFields({
                 name="notes"
                 value={draft.notes}
                 aria-invalid={Boolean(fieldErrors.notes)}
-                className={getFieldClassName(fieldErrors.notes)}
+                className={getFieldClassName(fieldErrors.notes, true)}
                 onChange={(event) => updateField("notes", event.target.value)}
               />
               <div className="flex items-center justify-between gap-3">
@@ -538,7 +532,7 @@ function FormFields({
         </section>
 
         <section className="flex flex-col gap-3 border-t border-[var(--border)]/70 pt-4 md:flex-row md:items-center md:justify-between">
-          <div className="rounded-lg border border-[var(--border)] bg-white/80 px-3 py-2.5">
+          <div className="rounded-lg border border-[var(--border)] bg-white/80 px-3 py-3 sm:py-2.5">
             <div className="flex items-center gap-3">
               <Checkbox
                 id={activeId}
@@ -595,10 +589,12 @@ function formatNumberInput(value: number | null | undefined) {
   return value === null || value === undefined ? "" : String(value);
 }
 
-function getFieldClassName(hasError?: string) {
-  return hasError
+function getFieldClassName(hasError?: string, isTextarea = false) {
+  const base = isTextarea ? "min-h-28 text-base sm:text-sm" : "h-10 text-base sm:h-9 sm:text-sm";
+  const tone = hasError
     ? "border-red-300 bg-red-50/70 focus:border-red-400 focus:ring-red-100"
     : "border-[var(--border)] bg-white/85 focus:border-[var(--cerulean)]/35 focus:ring-[var(--fresh-sky)]/15";
+  return `${base} ${tone}`;
 }
 
 function validateDraft(draft: RegistryItemDraft): FieldErrors {

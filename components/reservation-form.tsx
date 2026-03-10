@@ -103,7 +103,7 @@ export function ReservationForm({
       ref={formRef}
       action={formAction}
       className={[
-        "relative overflow-hidden space-y-2.5 rounded-xl border p-3 transition-[background-color,border-color,box-shadow] duration-500",
+        "relative overflow-hidden space-y-2.5 rounded-xl border p-3 transition-[background-color,border-color,box-shadow] duration-500 sm:p-3.5",
         showSuccessState
           ? "border-[var(--cerulean)]/16 bg-[linear-gradient(180deg,rgba(248,252,254,0.98),rgba(255,255,255,0.98))] shadow-[0_10px_24px_rgba(0,126,167,0.07)]"
           : "border-border bg-muted/40",
@@ -137,10 +137,10 @@ export function ReservationForm({
         Mark as purchased
       </p>
 
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="col-span-2 space-y-1.5">
+      <div className="grid gap-2.5 lg:grid-cols-2">
+        <div className="space-y-1.5 lg:col-span-2">
           <Label htmlFor={`guest-${itemId}`}>Your name</Label>
-          <Input id={`guest-${itemId}`} name="guestName" placeholder="Full name" required className="h-9" />
+          <Input id={`guest-${itemId}`} name="guestName" placeholder="Full name" required className="h-10 text-base sm:h-9 sm:text-sm" />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor={`qty-${itemId}`}>Quantity purchased</Label>
@@ -152,11 +152,15 @@ export function ReservationForm({
             max={remainingQuantity}
             defaultValue={1}
             required
-            className="h-9"
+            className="h-10 text-base sm:h-9 sm:text-sm"
           />
         </div>
         <div className="flex items-end">
-          <Button type="submit" className="h-9 w-full" disabled={pending || remainingQuantity < 1}>
+          <Button
+            type="submit"
+            className="h-auto min-h-10 w-full whitespace-normal py-2 text-center leading-tight sm:min-h-9"
+            disabled={pending || remainingQuantity < 1}
+          >
             {pending ? <LoaderCircle className="size-4 animate-spin" /> : null}
             Mark as purchased
           </Button>

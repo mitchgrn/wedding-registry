@@ -42,7 +42,7 @@ export function RegistryItemCard({
           ? "border-[var(--deep-space-blue)]/12 bg-[linear-gradient(180deg,rgba(248,251,253,0.98),rgba(238,245,249,0.92))] hover:border-[var(--deep-space-blue)]/20"
           : "hover:border-[var(--cerulean)]/20 hover:shadow-[0_4px_16px_rgba(0,23,31,0.09),0_1px_4px_rgba(0,23,31,0.05)]",
         viewMode === "list"
-          ? "grid gap-0 md:grid-cols-[220px_minmax(0,1fr)]"
+          ? "flex flex-col gap-0 md:grid md:grid-cols-[220px_minmax(0,1fr)]"
           : "flex h-full flex-col",
       ].join(" ")}
     >
@@ -65,7 +65,9 @@ export function RegistryItemCard({
                 : "saturate-[0.92] brightness-[0.9] contrast-[0.92] group-hover:scale-[1.025]",
             ].join(" ")}
             sizes={
-              viewMode === "list" ? "(max-width: 768px) 100vw, 220px" : "(max-width: 768px) 100vw, 33vw"
+              viewMode === "list"
+                ? "(max-width: 767px) 100vw, 220px"
+                : "(max-width: 768px) 100vw, 33vw"
             }
           />
         ) : (
@@ -115,14 +117,14 @@ export function RegistryItemCard({
         </p>
         <h3
           className={[
-            "text-[1.3rem] leading-tight md:text-[1.4rem]",
+            "text-[1.2rem] leading-tight sm:text-[1.3rem] md:text-[1.4rem]",
             fullyReserved ? "text-[var(--ink-black)]/72 line-through decoration-2 decoration-emerald-700/40" : "",
           ].join(" ")}
         >
           {item.title}
         </h3>
         {item.notes && (
-          <p className={["mt-1.5 text-[0.95rem] leading-6", fullyReserved ? "text-[var(--ink-black)]/48" : "text-muted-foreground"].join(" ")}>
+          <p className={["mt-1.5 text-sm leading-6 sm:text-[0.95rem]", fullyReserved ? "text-[var(--ink-black)]/48" : "text-muted-foreground"].join(" ")}>
             {item.notes}
           </p>
         )}
@@ -173,7 +175,7 @@ export function RegistryItemCard({
           </div>
         )}
 
-        <div className="mt-3">
+        <div className="mt-auto pt-3">
           <Button
             asChild
             className={viewMode === "list" ? "w-full sm:w-auto" : "w-full"}
