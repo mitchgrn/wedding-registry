@@ -35,10 +35,12 @@ export function RegistryItemCard({
   viewMode?: "list" | "grid";
 }) {
   const prefersReducedMotion = useReducedMotion();
-  const displayPrice =
+  const rawPrice =
     item.display_price ??
-    formatCurrency(item.manual_price, item.price_currency ?? "USD") ??
-    "Price varies";
+    formatCurrency(item.manual_price, item.price_currency ?? "CAD") ??
+    formatCurrency(item.price_amount, item.price_currency ?? "CAD");
+  // Keep $ and number, strip currency code/label (e.g. "CA$49.99" → "$49.99")
+  const displayPrice = rawPrice?.replace(/[A-Z]{2,3}\$/, "$").replace(/\s?[A-Z]{2,3}$/, "") ?? null;
 
   const reservedPct =
     item.desired_quantity > 0
@@ -92,19 +94,19 @@ export function RegistryItemCard({
       transition={{ duration: 0.28, ease: [0.2, 0, 0, 1] }}
       whileHover={undefined}
       className={[
-        "group overflow-hidden rounded-[1.4rem] border border-[rgba(0,52,89,0.1)] bg-white shadow-[0_1px_4px_rgba(0,23,31,0.05)] transition-[box-shadow,border-color,transform] duration-200 will-change-transform",
+        "group overflow-hidden rounded-[1.4rem] border border-[rgba(0,52,89,0.1)] bg-white shadow-[0_1px_4px_rgba(0,23,31,0.05)] transition-[box-shadow,border-color] duration-[180ms]",
         fullyReserved
           ? "border-[var(--deep-space-blue)]/12 bg-[linear-gradient(180deg,rgba(248,251,253,0.98),rgba(238,245,249,0.92))] hover:border-[var(--deep-space-blue)]/20"
           : "hover:border-[var(--cerulean)]/20 hover:shadow-[0_4px_16px_rgba(0,23,31,0.09),0_1px_4px_rgba(0,23,31,0.05)]",
         viewMode === "list"
-          ? "flex flex-col gap-0 md:grid md:grid-cols-[220px_minmax(0,1fr)]"
+          ? "flex flex-col sm:grid sm:grid-cols-[160px_minmax(0,1fr)] md:grid-cols-[220px_minmax(0,1fr)]"
           : "flex h-full flex-col",
       ].join(" ")}
     >
       <div
         className={
           viewMode === "list"
-            ? "relative min-h-[190px] overflow-hidden bg-muted"
+            ? "relative aspect-[16/7] overflow-hidden bg-muted sm:aspect-auto sm:min-h-full"
             : "relative aspect-[5/4] overflow-hidden bg-muted"
         }
       >
@@ -121,7 +123,7 @@ export function RegistryItemCard({
             ].join(" ")}
             sizes={
               viewMode === "list"
-                ? "(max-width: 767px) 100vw, 220px"
+                ? "(max-width: 639px) 120px, (max-width: 767px) 160px, 220px"
                 : "(max-width: 768px) 100vw, 33vw"
             }
           />
@@ -153,12 +155,14 @@ export function RegistryItemCard({
             </Badge>
           ) : null}
         </div>
-        <div className="absolute bottom-3 right-3">
-          <span className="inline-flex min-h-10 items-center gap-2 rounded-md border border-white/20 bg-[var(--deep-space-blue)]/90 px-3 py-2 text-sm font-semibold text-white backdrop-blur-sm">
-            <Tag className="size-3.5" />
-            {displayPrice}
-          </span>
-        </div>
+        {displayPrice ? (
+          <div className="absolute bottom-3 right-3">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-[var(--deep-space-blue)]/90 px-2.5 py-1.5 text-sm font-semibold text-white backdrop-blur-sm">
+              <Tag className="size-3.5" />
+              {displayPrice}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <div className="relative flex flex-1 flex-col p-4 md:p-5" data-celebrate={showRecentCelebration}>
@@ -199,7 +203,7 @@ export function RegistryItemCard({
           {item.title}
         </h3>
         {item.notes && (
-          <p className={["mt-1.5 text-sm leading-6 sm:text-[0.95rem]", fullyReserved ? "text-[var(--ink-black)]/48" : "text-muted-foreground"].join(" ")}>
+          <p className={["mt-1.5 text-sm leading-6 sm:text-[0.95rem]", viewMode === "list" ? "line-clamp-2" : "", fullyReserved ? "text-[var(--ink-black)]/48" : "text-muted-foreground"].join(" ")}>
             {item.notes}
           </p>
         )}

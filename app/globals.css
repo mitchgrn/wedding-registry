@@ -92,7 +92,7 @@ html {
 }
 
 body {
-  min-height: 100vh;
+  min-height: 100dvh;
   color: var(--foreground);
   background-color: var(--background);
   font-family: var(--font-body), -apple-system, "Helvetica Neue", sans-serif;

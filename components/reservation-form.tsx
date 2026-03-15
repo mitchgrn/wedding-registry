@@ -124,36 +124,36 @@ export function ReservationForm({
 
       <input type="hidden" name="itemId" value={itemId} />
 
-      <p className="text-sm font-semibold tracking-[0.02em] text-primary">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-primary/70">
         Mark as purchased
       </p>
 
-      <div className="grid gap-2.5 lg:grid-cols-2">
-        <div className="space-y-1.5 lg:col-span-2">
-          <Label htmlFor={`guest-${itemId}`}>Your name</Label>
+      <div className="space-y-2.5">
+        <div className="space-y-1.5">
+          <Label htmlFor={`guest-${itemId}`} className="text-xs font-medium text-muted-foreground">Your name</Label>
           <Input id={`guest-${itemId}`} name="guestName" placeholder="Full name" required className="h-10 text-base sm:h-9 sm:text-sm" />
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor={`qty-${itemId}`}>Quantity purchased</Label>
-          <Input
-            id={`qty-${itemId}`}
-            name="quantity"
-            type="number"
-            min={1}
-            max={remainingQuantity}
-            defaultValue={1}
-            required
-            className="h-10 text-base sm:h-9 sm:text-sm"
-          />
-        </div>
-        <div className="flex items-end">
+        <div className="grid grid-cols-[1fr_auto] items-end gap-2">
+          <div className="space-y-1.5">
+            <Label htmlFor={`qty-${itemId}`} className="text-xs font-medium text-muted-foreground">Qty</Label>
+            <Input
+              id={`qty-${itemId}`}
+              name="quantity"
+              type="number"
+              min={1}
+              max={remainingQuantity}
+              defaultValue={1}
+              required
+              className="h-10 text-base sm:h-9 sm:text-sm"
+            />
+          </div>
           <Button
             type="submit"
-            className="h-auto min-h-10 w-full whitespace-normal py-2 text-center leading-tight sm:min-h-9"
+            className="h-10 whitespace-nowrap sm:h-9"
             disabled={pending || remainingQuantity < 1}
           >
             {pending ? <LoaderCircle className="size-4 animate-spin" /> : null}
-            Mark as purchased
+            Mark purchased
           </Button>
         </div>
       </div>

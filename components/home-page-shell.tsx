@@ -34,7 +34,7 @@ export function HomePageShell({
         };
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-dvh bg-white">
       <header className="relative overflow-hidden border-b border-border">
         {/* Static, very light gradient — no animation */}
         <div
@@ -151,22 +151,26 @@ export function HomePageShell({
           animate: { opacity: 1 },
           transition: { duration: 0.3, delay: stagger(9), ease },
         })}
-        className="sticky top-0 z-40 hidden border-b border-border bg-white/94 px-6 py-3 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md sm:block md:px-12 xl:px-20"
+        className="sticky top-0 z-40 border-b border-border bg-white/94 px-4 py-2.5 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md sm:px-6 md:px-12 xl:px-20"
       >
-        <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto pb-0.5 text-xs font-medium text-ink-black/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 sm:overflow-visible sm:pb-0 sm:text-sm">
-          <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-border/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
-            <Gift size={16} className="text-cerulean" />
+        <div className="mx-auto flex max-w-5xl items-center justify-center gap-2 overflow-x-auto pb-0.5 text-xs font-medium text-ink-black/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:gap-3 sm:overflow-visible sm:pb-0 sm:text-sm">
+          <div className="flex min-w-max items-center justify-center gap-1.5 px-0 py-1 sm:gap-2">
+            <Gift size={14} className="text-cerulean sm:size-4" />
             <span>{items.length} {items.length === 1 ? "Item" : "Items"}</span>
           </div>
-          <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-border/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
-            <CircleCheck size={16} className="text-fresh-sky" />
+          <span aria-hidden="true" className="text-border/60">·</span>
+          <div className="flex min-w-max items-center justify-center gap-1.5 px-0 py-1 sm:gap-2">
+            <CircleCheck size={14} className="text-fresh-sky sm:size-4" />
             <span>{availableCount} Available</span>
           </div>
           {requestedCount > 0 ? (
-            <div className="flex min-w-max items-center justify-center gap-2 rounded-full border border-border/80 bg-white/80 px-3 py-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
-              <Heart size={16} className="fill-deep-space-blue text-deep-space-blue" />
-              <span>{requestedCount} Claimed</span>
-            </div>
+            <>
+              <span aria-hidden="true" className="text-border/60">·</span>
+              <div className="flex min-w-max items-center justify-center gap-1.5 px-0 py-1 sm:gap-2">
+                <Heart size={14} className="fill-deep-space-blue text-deep-space-blue sm:size-4" />
+                <span>{requestedCount} Claimed</span>
+              </div>
+            </>
           ) : null}
         </div>
       </motion.div>
@@ -177,7 +181,7 @@ export function HomePageShell({
         whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.35, ease }}
-        className="mx-auto max-w-5xl px-4 pb-8 pt-2 sm:px-6 md:px-12 md:py-12 xl:px-20"
+        className="mx-auto max-w-5xl px-4 pb-4 pt-2 sm:px-6 sm:pb-8 md:px-12 md:pb-10 md:pt-8 xl:px-20"
       >
         {items.length ? (
           <RegistryBrowser items={items} />
@@ -189,7 +193,7 @@ export function HomePageShell({
         )}
       </motion.section>
 
-      <footer className="border-t bg-white px-4 py-5 sm:px-6">
+      <footer className="border-t bg-white px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 sm:px-6">
         <p className="mx-auto max-w-3xl text-center text-xs leading-5 text-muted-foreground">
           Built by Mitch, who rage quit every other wedding registry site and decided to just make his own.
         </p>

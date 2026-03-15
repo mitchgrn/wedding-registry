@@ -1,8 +1,8 @@
 "use client";
 
 import { ArrowUpDown, Copy, Grid3X3, Info, List, Search, SearchX, ShoppingBag, SlidersHorizontal, X } from "lucide-react";
-import { useDeferredValue, useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
 import { toast } from "sonner";
 import { RegistryItemCard } from "@/components/registry-item-card";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
@@ -49,7 +51,15 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
   const [filterInfoOpen, setFilterInfoOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [mobileShippingOpen, setMobileShippingOpen] = useState(false);
+  // Draft state — only committed when the drawer "Show results" button is tapped
+  const [draftSortBy, setDraftSortBy] = useState<SortKey>("title");
+  const [draftHidePurchased, setDraftHidePurchased] = useState(false);
+  const [draftStoreFilter, setDraftStoreFilter] = useState("all");
   const prefersReducedMotion = useReducedMotion();
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { amount: 0.1 });
+  const isBottomInView = useInView(bottomRef, { amount: 0 });
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
   const stores = Array.from(new Set(items.map((item) => getStoreLabel(item.purchase_url)))).sort((a, b) =>
@@ -140,57 +150,85 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
     setHidePurchased(false);
   }
 
+  function openMobileFilters() {
+    setDraftSortBy(sortBy);
+    setDraftHidePurchased(hidePurchased);
+    setDraftStoreFilter(storeFilter);
+    setMobileFiltersOpen(true);
+  }
+
+  function applyMobileFilters() {
+    setSortBy(draftSortBy);
+    setHidePurchased(draftHidePurchased);
+    setStoreFilter(draftStoreFilter);
+    setMobileFiltersOpen(false);
+  }
+
+  function resetDraftFilters() {
+    setDraftSortBy("title");
+    setDraftHidePurchased(false);
+    setDraftStoreFilter("all");
+  }
+
+  const draftFilterCount = Number(draftStoreFilter !== "all") + Number(draftHidePurchased) + Number(draftSortBy !== "title");
+
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <div className="sticky top-0 z-30 -mx-4 bg-white/95 px-4 py-2 shadow-sm backdrop-blur-md sm:hidden">
-          <div className="flex items-center gap-2">
-            <div className="relative min-w-0 flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                aria-label="Search registry items"
-                className="h-10 rounded-full border-border bg-white pl-9 pr-9 text-base"
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search…"
-                value={query}
-              />
-              {query ? (
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  onClick={() => setQuery("")}
-                  aria-label="Clear search"
-                >
-                  <X className="size-4" />
-                </button>
-              ) : null}
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="h-10 shrink-0 rounded-full border-border bg-white px-3 text-sm"
-              onClick={() => setMobileShippingOpen(true)}
-            >
-              <Info className="size-4 text-[var(--cerulean)]" />
-              Shipping
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="relative h-10 shrink-0 rounded-full border-border bg-white px-3 text-sm"
-              onClick={() => setMobileFiltersOpen(true)}
-            >
-              <SlidersHorizontal className="size-4 text-[var(--cerulean)]" />
-              Filters
-              {activeFilterCount > 0 ? (
-                <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-[var(--cerulean)] text-[10px] font-semibold text-white">
-                  {activeFilterCount}
-                </span>
-              ) : null}
-            </Button>
+    <div ref={sectionRef} className="space-y-6 pb-16 sm:space-y-8 sm:pb-0">
+      {/* Floating bottom bar — mobile only */}
+      <motion.div
+        className="fixed bottom-[env(safe-area-inset-bottom,0px)] left-0 right-0 z-40 flex justify-center px-4 pb-4 sm:hidden"
+        initial={{ opacity: 0, y: 16 }}
+        animate={isInView && !isBottomInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, ease: [0.2, 0, 0, 1] }}
+      >
+        <div className="flex w-full max-w-sm items-center gap-1 rounded-2xl border border-ink-black/10 bg-white p-2 shadow-[0_8px_32px_rgba(0,23,31,0.18),0_2px_8px_rgba(0,23,31,0.08)]">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-black/40" />
+            <Input
+              aria-label="Search registry items"
+              className="h-10 rounded-xl border-transparent bg-ink-black/[0.04] pl-9 pr-9 text-base focus:border-border focus:bg-white"
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search…"
+              value={query}
+            />
+            {query ? (
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-black/40"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+              >
+                <X className="size-4" />
+              </button>
+            ) : null}
           </div>
-      </div>
+
+          <button
+            type="button"
+            className="flex h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-sm font-medium text-ink-black/70 transition-colors hover:bg-ink-black/[0.04] hover:text-ink-black"
+            onClick={() => setMobileShippingOpen(true)}
+            aria-label="View shipping info"
+          >
+            <Info className="size-4 text-cerulean" />
+            Shipping
+          </button>
+
+          <button
+            type="button"
+            className="relative flex h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-sm font-medium text-ink-black/70 transition-colors hover:bg-ink-black/[0.04] hover:text-ink-black"
+            onClick={openMobileFilters}
+            aria-label="Open filters"
+          >
+            <SlidersHorizontal className="size-4 text-cerulean" />
+            Filters
+            {activeFilterCount > 0 ? (
+              <span className="flex size-[1rem] items-center justify-center rounded-full bg-cerulean text-[9px] font-bold text-white">
+                {activeFilterCount}
+              </span>
+            ) : null}
+          </button>
+        </div>
+      </motion.div>
 
       <motion.div
         initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
@@ -365,21 +403,29 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
         )}
       </AnimatePresence>
 
-      <Drawer open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+      <Drawer open={mobileFiltersOpen} onOpenChange={(open) => { if (!open) setMobileFiltersOpen(false); }}>
         <DrawerContent className="sm:hidden">
           <DrawerHeader className="border-b border-border pb-4">
-            <DrawerTitle>Filters</DrawerTitle>
-            <DrawerDescription>
-              {filteredItems.length} result{filteredItems.length === 1 ? "" : "s"}
-            </DrawerDescription>
+            <div className="flex items-center justify-between">
+              <DrawerTitle>Filters</DrawerTitle>
+              {draftFilterCount > 0 ? (
+                <button
+                  type="button"
+                  className="text-sm font-medium text-cerulean"
+                  onClick={resetDraftFilters}
+                >
+                  Reset
+                </button>
+              ) : null}
+            </div>
           </DrawerHeader>
 
-          <div className="flex flex-col gap-5 overflow-y-auto px-5 pb-4 pt-5">
+          <div className="flex flex-col gap-4 overflow-y-auto px-5 pb-2 pt-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="registry-store-filter-mobile" className="text-sm font-medium">
+              <Label htmlFor="registry-store-filter-mobile" className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
                 Store
               </Label>
-              <Select onValueChange={setStoreFilter} value={storeFilter}>
+              <Select onValueChange={setDraftStoreFilter} value={draftStoreFilter}>
                 <SelectTrigger id="registry-store-filter-mobile" aria-label="Filter by store" className="h-11 rounded-xl text-base">
                   <SelectValue placeholder="All stores" />
                 </SelectTrigger>
@@ -395,10 +441,10 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="registry-sort-mobile" className="text-sm font-medium">
+              <Label htmlFor="registry-sort-mobile" className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
                 Sort
               </Label>
-              <Select onValueChange={(value) => setSortBy(value as SortKey)} value={sortBy}>
+              <Select onValueChange={(value) => setDraftSortBy(value as SortKey)} value={draftSortBy}>
                 <SelectTrigger id="registry-sort-mobile" aria-label="Sort items" className="h-11 rounded-xl text-base">
                   <SelectValue />
                 </SelectTrigger>
@@ -413,59 +459,36 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
 
             <label
               htmlFor="registry-hide-purchased-mobile"
-              className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border bg-muted/40 px-4 py-3"
+              className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border bg-muted/40 px-4 py-3.5"
             >
               <span className="text-sm font-medium">Hide purchased gifts</span>
               <Checkbox
                 id="registry-hide-purchased-mobile"
-                checked={hidePurchased}
+                checked={draftHidePurchased}
                 aria-label="Hide purchased gifts"
-                onCheckedChange={(checked) => setHidePurchased(checked === true)}
+                onCheckedChange={(checked) => setDraftHidePurchased(checked === true)}
               />
             </label>
-
-            <div className="flex flex-col gap-2">
-              <Label className="text-sm font-medium">View</Label>
-              <div className="inline-flex rounded-xl border border-border bg-muted/40 p-1">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={viewMode === "list" ? "default" : "ghost"}
-                  className="h-10 flex-1 rounded-lg text-sm"
-                  onClick={() => setViewMode("list")}
-                  aria-pressed={viewMode === "list"}
-                >
-                  <List className="size-4" />
-                  List
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={viewMode === "grid" ? "default" : "ghost"}
-                  className="h-10 flex-1 rounded-lg text-sm"
-                  onClick={() => setViewMode("grid")}
-                  aria-pressed={viewMode === "grid"}
-                >
-                  <Grid3X3 className="size-4" />
-                  Grid
-                </Button>
-              </div>
-            </div>
-
           </div>
+
+          <DrawerFooter className="pb-6 pt-3">
+            <Button type="button" className="h-12 w-full rounded-xl text-base font-medium" onClick={applyMobileFilters}>
+              Apply filters
+            </Button>
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
 
       <Drawer open={mobileShippingOpen} onOpenChange={setMobileShippingOpen}>
         <DrawerContent className="sm:hidden">
           <DrawerHeader className="border-b border-border pb-4">
-            <DrawerTitle>Shipping info</DrawerTitle>
+            <DrawerTitle>Shipping address</DrawerTitle>
             <DrawerDescription>Use this address if the store ships directly.</DrawerDescription>
           </DrawerHeader>
 
-          <div className="px-5 pb-5 pt-5">
-            <div className="rounded-[1.2rem] border border-[var(--cerulean)]/12 bg-white/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-              <address className="not-italic text-sm leading-7 text-[var(--ink-black)]/80">
+          <div className="px-5 pt-5">
+            <div className="rounded-[1.2rem] border border-cerulean/12 bg-muted/40 p-4">
+              <address className="not-italic text-sm leading-7 text-ink-black/80">
                 Taylor Hrabarchuk
                 <br />
                 5804 Rannock Avenue
@@ -474,17 +497,24 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
                 <br />
                 CANADA
               </address>
-              <Button
-                type="button"
-                variant="outline"
-                className="mt-4 h-10 w-full justify-center rounded-xl"
-                onClick={handleCopyShippingAddress}
-              >
-                <Copy className="size-4" />
-                Copy address
-              </Button>
             </div>
           </div>
+
+          <DrawerFooter className="pt-4">
+            <Button
+              type="button"
+              className="h-12 w-full rounded-xl text-base font-medium"
+              onClick={handleCopyShippingAddress}
+            >
+              <Copy className="size-4" />
+              Copy address
+            </Button>
+            <DrawerClose asChild>
+              <Button type="button" variant="ghost" className="h-10 w-full text-sm text-muted-foreground">
+                Done
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
 
@@ -554,6 +584,8 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
           </motion.div>
         ) : null}
       </AnimatePresence>
+
+      <div ref={bottomRef} aria-hidden="true" />
     </div>
   );
 }
