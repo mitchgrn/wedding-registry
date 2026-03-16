@@ -89,7 +89,7 @@ export function RegistryItemCard({
 
   return (
     <motion.article
-      initial={prefersReducedMotion ? false : { opacity: 0 }}
+      initial={false}
       animate={prefersReducedMotion ? undefined : { opacity: 1 }}
       transition={{ duration: 0.28, ease: [0.2, 0, 0, 1] }}
       whileHover={undefined}

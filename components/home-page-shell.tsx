@@ -177,7 +177,7 @@ export function HomePageShell({
 
       <motion.section
         id="registry-section"
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+        initial={false}
         whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.35, ease }}

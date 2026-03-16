@@ -231,7 +231,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
       </motion.div>
 
       <motion.div
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
+        initial={false}
         whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.28, ease: [0.2, 0, 0, 1] }}
@@ -363,7 +363,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
         {filteredItems.length ? (
           <motion.div
             key={viewMode}
-            initial={prefersReducedMotion ? false : { opacity: 0 }}
+            initial={false}
             animate={prefersReducedMotion ? undefined : { opacity: 1 }}
             exit={prefersReducedMotion ? undefined : { opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
@@ -378,7 +378,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
         ) : (
           <motion.div
             key="empty"
-            initial={prefersReducedMotion ? false : { opacity: 0 }}
+            initial={false}
             animate={prefersReducedMotion ? undefined : { opacity: 1 }}
             exit={prefersReducedMotion ? undefined : { opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
