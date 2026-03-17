@@ -31,9 +31,11 @@ type ConfettiStyle = CSSProperties & {
 export function ReservationForm({
   itemId,
   remainingQuantity,
+  idPrefix = "reservation",
 }: {
   itemId: string;
   remainingQuantity: number;
+  idPrefix?: string;
 }) {
   const [state, formAction, pending] = useActionState(createReservationAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
@@ -88,6 +90,8 @@ export function ReservationForm({
   }, [celebrationPhase]);
 
   const showSuccessState = celebrationPhase !== "idle";
+  const guestFieldId = `${idPrefix}-guest-${itemId}`;
+  const quantityFieldId = `${idPrefix}-qty-${itemId}`;
 
   return (
     <form
@@ -130,14 +134,14 @@ export function ReservationForm({
 
       <div className="space-y-2.5">
         <div className="space-y-1.5">
-          <Label htmlFor={`guest-${itemId}`} className="text-xs font-medium text-muted-foreground">Your name</Label>
-          <Input id={`guest-${itemId}`} name="guestName" placeholder="Full name" required className="h-10 text-base sm:h-9 sm:text-sm" />
+          <Label htmlFor={guestFieldId} className="text-xs font-medium text-muted-foreground">Your name</Label>
+          <Input id={guestFieldId} name="guestName" placeholder="Full name" required className="h-10 text-base sm:h-9 sm:text-sm" />
         </div>
         <div className="grid grid-cols-[1fr_auto] items-end gap-2">
           <div className="space-y-1.5">
-            <Label htmlFor={`qty-${itemId}`} className="text-xs font-medium text-muted-foreground">Qty</Label>
+            <Label htmlFor={quantityFieldId} className="text-xs font-medium text-muted-foreground">Qty</Label>
             <Input
-              id={`qty-${itemId}`}
+              id={quantityFieldId}
               name="quantity"
               type="number"
               min={1}

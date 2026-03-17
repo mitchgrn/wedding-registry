@@ -56,10 +56,10 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
   const [draftHidePurchased, setDraftHidePurchased] = useState(false);
   const [draftStoreFilter, setDraftStoreFilter] = useState("all");
   const prefersReducedMotion = useReducedMotion();
-  const sectionRef = useRef<HTMLDivElement>(null);
+  const resultsStartRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { amount: 0.1 });
-  const isBottomInView = useInView(bottomRef, { amount: 0 });
+  const [showMobileFloatingBar, setShowMobileFloatingBar] = useState(false);
+  const isBottomInView = useInView(bottomRef, { amount: 0.15 });
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
   const stores = Array.from(new Set(items.map((item) => getStoreLabel(item.purchase_url)))).sort((a, b) =>
@@ -134,6 +134,55 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
     };
   }, [filterInfoOpen]);
 
+  useEffect(() => {
+    const updateFloatingBarVisibility = () => {
+      if (window.innerWidth >= 640) {
+        setShowMobileFloatingBar(false);
+        return;
+      }
+
+      const startRect = resultsStartRef.current?.getBoundingClientRect();
+      const bottomRect = bottomRef.current?.getBoundingClientRect();
+
+      if (!startRect || !bottomRect) {
+        setShowMobileFloatingBar(false);
+        return;
+      }
+
+      const viewportHeight = window.innerHeight;
+      const hasEnteredResults = startRect.top <= viewportHeight * 0.86;
+      const hasReachedBottom = bottomRect.top <= viewportHeight * 0.9;
+
+      setShowMobileFloatingBar(hasEnteredResults && !hasReachedBottom);
+    };
+
+    updateFloatingBarVisibility();
+
+    let frameId = 0;
+    const handleScrollOrResize = () => {
+      if (frameId) {
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0;
+        updateFloatingBarVisibility();
+      });
+    };
+
+    window.addEventListener("scroll", handleScrollOrResize, { passive: true });
+    window.addEventListener("resize", handleScrollOrResize);
+
+    return () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      window.removeEventListener("scroll", handleScrollOrResize);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
+  }, [filteredItems.length, isBottomInView]);
+
   async function handleCopyShippingAddress() {
     try {
       await navigator.clipboard.writeText(shippingAddress);
@@ -173,12 +222,15 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
   const draftFilterCount = Number(draftStoreFilter !== "all") + Number(draftHidePurchased) + Number(draftSortBy !== "title");
 
   return (
-    <div ref={sectionRef} className="space-y-6 pb-16 sm:space-y-8 sm:pb-0">
+    <div className="space-y-6 pb-16 sm:space-y-8 sm:pb-0">
       {/* Floating bottom bar — mobile only */}
       <motion.div
-        className="fixed bottom-[env(safe-area-inset-bottom,0px)] left-0 right-0 z-40 flex justify-center px-4 pb-4 sm:hidden"
+        className={[
+          "fixed bottom-[env(safe-area-inset-bottom,0px)] left-0 right-0 z-40 flex justify-center px-4 pb-4 sm:hidden",
+          showMobileFloatingBar ? "pointer-events-auto" : "pointer-events-none",
+        ].join(" ")}
         initial={{ opacity: 0, y: 16 }}
-        animate={isInView && !isBottomInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        animate={showMobileFloatingBar && !isBottomInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
         transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, ease: [0.2, 0, 0, 1] }}
       >
         <div className="flex w-full max-w-sm items-center gap-1 rounded-2xl border border-ink-black/10 bg-white p-2 shadow-[0_8px_32px_rgba(0,23,31,0.18),0_2px_8px_rgba(0,23,31,0.08)]">
@@ -359,6 +411,8 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
       </motion.div>
 
 
+      <div ref={resultsStartRef} aria-hidden="true" className="h-px" />
+
       <AnimatePresence mode="wait">
         {filteredItems.length ? (
           <motion.div
@@ -368,7 +422,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
             exit={prefersReducedMotion ? undefined : { opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
             className={[
-              viewMode === "grid" ? "grid gap-4 sm:gap-6 md:grid-cols-2 2xl:grid-cols-3" : "space-y-4 sm:space-y-5",
+              viewMode === "grid" ? "space-y-3 sm:grid sm:gap-6 md:grid-cols-2 2xl:grid-cols-3" : "space-y-3 sm:space-y-5",
             ].join(" ")}
           >
             {filteredItems.map((item) => (
@@ -585,7 +639,7 @@ export function RegistryBrowser({ items }: { items: RegistryItemWithStats[] }) {
         ) : null}
       </AnimatePresence>
 
-      <div ref={bottomRef} aria-hidden="true" />
+      <div ref={bottomRef} aria-hidden="true" className="h-24 sm:h-10" />
     </div>
   );
 }
