@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, Gift, Heart } from "lucide-react";
+import { CircleCheck, Gift, Heart, Plane } from "lucide-react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import heroPhoto from "@/app/images/us.jpg";
@@ -149,11 +149,11 @@ export function HomePageShell({
         {...(prefersReducedMotion ? {} : {
           initial: { opacity: 0 },
           animate: { opacity: 1 },
-          transition: { duration: 0.3, delay: stagger(9), ease },
+          transition: { duration: 0.3, delay: stagger(10), ease },
         })}
-        className="sticky top-0 z-40 border-b border-border bg-white/94 px-4 py-2.5 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md sm:px-6 md:px-12 xl:px-20"
+        className="sticky top-0 z-40 border-b border-border bg-white/94 shadow-[0_4px_14px_rgba(0,23,31,0.04)] backdrop-blur-md"
       >
-        <div className="mx-auto flex max-w-5xl items-center justify-center gap-2 overflow-x-auto pb-0.5 text-xs font-medium text-ink-black/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:gap-3 sm:overflow-visible sm:pb-0 sm:text-sm">
+        <div className="mx-auto flex max-w-5xl items-center justify-center gap-2 overflow-x-auto px-4 py-2.5 text-xs font-medium text-ink-black/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:gap-3 sm:overflow-visible sm:px-6 sm:text-sm md:px-12 xl:px-20">
           <div className="flex min-w-max items-center justify-center gap-1.5 px-0 py-1 sm:gap-2">
             <Gift size={14} className="text-cerulean sm:size-4" />
             <span>{items.length} {items.length === 1 ? "Item" : "Items"}</span>
@@ -173,6 +173,20 @@ export function HomePageShell({
             </>
           ) : null}
         </div>
+
+        <aside
+          className="mx-auto max-w-5xl px-4 pb-2 sm:px-6 md:px-12 xl:px-20"
+          aria-label="Cash gift note"
+        >
+          <div className="flex items-start gap-2.5 rounded-md border border-cerulean/18 bg-soft-blue/70 px-3 py-2 sm:items-center sm:gap-3 sm:px-4">
+            <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-cerulean sm:mt-0">
+              <Plane size={16} aria-hidden="true" />
+            </span>
+            <p className="text-sm leading-relaxed text-ink-black/72 sm:text-base">
+              In lieu of a physical gift, we would also appreciate a cash gift to put toward our honeymoon trip to Italy.
+            </p>
+          </div>
+        </aside>
       </motion.div>
 
       <motion.section
