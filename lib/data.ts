@@ -1,5 +1,5 @@
 import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
-import type { RegistryItemRow, RegistryItemWithStats, ReservationRow } from "@/lib/types";
+import type { AdminReservationExportRow, RegistryItemRow, RegistryItemWithStats, ReservationRow } from "@/lib/types";
 
 function mergeItemsWithReservations(items: RegistryItemRow[], reservations: ReservationRow[]) {
   return items.map<RegistryItemWithStats>((item) => {
@@ -46,4 +46,35 @@ export async function getAdminRegistryItems() {
     (items as RegistryItemRow[] | null) ?? [],
     (reservations as ReservationRow[] | null) ?? [],
   );
+}
+
+export async function getAdminReservationExportRows() {
+  const supabase = createServiceRoleClient();
+  const [{ data: reservations }, { data: items }] = await Promise.all([
+    supabase
+      .from("registry_reservations")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("registry_items")
+      .select("id, title, purchase_url, is_active"),
+  ]);
+
+  const itemsById = new Map(
+    ((items as Pick<RegistryItemRow, "id" | "title" | "purchase_url" | "is_active">[] | null) ?? []).map((item) => [
+      item.id,
+      item,
+    ]),
+  );
+
+  return ((reservations as ReservationRow[] | null) ?? []).map<AdminReservationExportRow>((reservation) => {
+    const item = itemsById.get(reservation.item_id);
+
+    return {
+      ...reservation,
+      item_title: item?.title ?? "Deleted item",
+      item_purchase_url: item?.purchase_url ?? "",
+      item_is_active: item?.is_active ?? false,
+    };
+  });
 }

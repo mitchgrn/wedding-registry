@@ -31,3 +31,9 @@ export type RegistryItemWithStats = RegistryItemRow & {
   remaining_quantity: number;
   reservation_count: number;
 };
+
+export type AdminReservationExportRow = ReservationRow & {
+  item_title: string;
+  item_purchase_url: string;
+  item_is_active: boolean;
+};
